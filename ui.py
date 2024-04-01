@@ -35,3 +35,33 @@ def draw_button(surface, text, position, size, hover):
 # Function to check if mouse is hovering over a button
 def is_hover(mouse_pos, button_rect):
     return button_rect.collidepoint(mouse_pos)
+
+# Function to display the population information box
+def display_population_info(game_display, population, x, y, tile_x, tile_y):
+    font = pygame.font.Font(None, 20)
+
+    # Render tile coordinates text
+    tile_text = "Tile: " + str(tile_x) + " , " + str(tile_y)
+    tile_surface = font.render(tile_text, True, (255, 255, 255))
+
+    # Render population text
+    population_text = "Population: " + str(population)
+    population_surface = font.render(population_text, True, (255, 255, 255))
+
+    # Calculate text rect for population
+    population_rect = population_surface.get_rect()
+    population_rect.topleft = (x + 15, y + 25)
+
+    # Calculate text rect for tile coordinates
+    tile_rect = tile_surface.get_rect()
+    tile_rect.topleft = (x + 15, y + population_rect.height + 25)  # Shift below population text
+
+    # Draw background rectangles
+    pygame.draw.rect(game_display, (0, 0, 0), population_rect)  # Background color for population
+    pygame.draw.rect(game_display, (0, 0, 0), tile_rect)        # Background color for tile
+
+    # Blit population text onto game display
+    game_display.blit(population_surface, population_rect)
+
+    # Blit tile coordinates text onto game display
+    game_display.blit(tile_surface, tile_rect)
