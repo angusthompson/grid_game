@@ -30,8 +30,7 @@ class Tile:
 
 
 class Development:
-    def __init__(self, name, type):
-        self.name = name
+    def __init__(self, type):
 
         if not (type in ALLOWABLE_DEVELOPMENTS):
             raise ValueError(f"Development 'type' must be in the list {ALLOWABLE_DEVELOPMENTS}")
@@ -39,11 +38,8 @@ class Development:
             self.type = type
 
 class Market:
-    def __init__(self, name, commodities = 0):
-        self.name = name
+    def __init__(self, commodities = 0):
         self.commodities = commodities
-
-
 
 class Game:
     def __init__(self, n_x, n_y):
@@ -53,10 +49,17 @@ class Game:
             n_x (int): Number of x points (width).
             n_y (int): Number of y points (height).
         """
-        
         self.grid = [ [None]*n_x for i in range(n_y)]          # This generates a list full of 'None' objects, with dimensions n_x by n_y.
         self.cities = []
         self.markets = []
+
+    @property
+    def n_x(self):
+        return len(self.grid[0])
+    
+    @property
+    def n_y(self):
+        return len(self.grid)
 
     def generate_map(self):
         # Incomplete
