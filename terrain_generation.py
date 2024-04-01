@@ -1,16 +1,16 @@
 import numpy as np
 import random
 
-# Function to generate terrain grid with realistic clustering
-def generate_terrain_grid(size, num_iterations=5):
-    # Generate initial terrain grid
-    terrain_grid = np.random.choice([1, 1, 1, 1, 1,1,2, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4], size=(size, size))
+def generate_terrain_grid(size_x, size_y, num_iterations=5):
+    # Generate initial terrain grid separately for x and y axes
+    terrain_grid = np.random.choice([1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4], size=(size_y, size_x))
     
     # Apply clustering algorithm
     for _ in range(num_iterations):
         terrain_grid = update_terrain_grid(terrain_grid)
     
     return terrain_grid
+
 
 # Function to update terrain grid to favor clusters of the same terrain type
 def update_terrain_grid(terrain_grid):
@@ -20,7 +20,7 @@ def update_terrain_grid(terrain_grid):
             neighbors = get_neighbors(terrain_grid, x, y)
             most_common_neighbor = max(set(neighbors), key=neighbors.count)
             random_integer = random.randint(0, 10)
-            if random_integer > 5:
+            if random_integer > 4:
                 new_terrain_grid[y][x] = most_common_neighbor
             else:
                 new_terrain_grid[y][x] = terrain_grid[y][x]
