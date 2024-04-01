@@ -45,6 +45,8 @@ def update_population_caps(initial_population_caps, terrain_grid):
                 farmland_count = neighbor_types.count(6)  # Count adjacent farmland tiles
                 town_count = neighbor_types.count(5) 
                 updated_population_caps[y][x] += 5 * sea_count + 5 * farmland_count - 10 * town_count
+                if terrain_grid[y][x] == 6:
+                    updated_population_caps[y][x] += - 10 * town_count + 20
     return updated_population_caps
 
 def simulate_population_growth(population_grid, initial_population_caps, terrain_grid):
@@ -81,6 +83,8 @@ def simulate_population_growth(population_grid, initial_population_caps, terrain
             if terrain_grid[y][x] == 2 or terrain_grid[y][x] == 6:  # Field tile
                 if population_grid[y][x] > 0:
                     population_grid[y][x] += 1
+                if population_grid[y][x] < 1:
+                    terrain_grid[y][x] = 2  # Convert back to fields
                 if population_grid[y][x] > 24:
                     terrain_grid[y][x] = 5  # Convert to town
                     for dy in range(-1, 2):
@@ -89,11 +93,15 @@ def simulate_population_growth(population_grid, initial_population_caps, terrain
                             if (dx != 0 or dy != 0) and 0 <= nx < sizex and 0 <= ny < sizey:
                                 if terrain_grid[ny][nx] == 2:  # Field tile
                                     terrain_grid[ny][nx] = 6  # Convert to farmland
+                                    population_grid[ny][nx] +=1
+            elif population_grid[y][x] > 40:
+                terrain_grid[y][x] = 7  # Convert to city
             elif terrain_grid[y][x] == 5:  # Town tile
                 if population_grid[y][x] < population_caps[y][x]:
                     population_grid[y][x] += 1
                 if population_grid[y][x] < 25:
                     terrain_grid[y][x] = 6  # Convert back to fields
+
 
 
     return population_grid, terrain_grid
