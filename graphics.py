@@ -66,7 +66,7 @@ def draw_terrain_and_population(terrain_grid, population_grid, cell_size):
             # Render population number
             population = int(population_grid[y][x][0])  # Convert to integer
             if population > 0:
-                font = pygame.font.Font(None, 20)
+                font = pygame.font.Font(None, 15)
                 text_surface = font.render(str(population), True, BLACK)
                 text_rect = text_surface.get_rect(center=(x * cell_size + cell_size // 2, y * cell_size + cell_size // 2))
                 game_display.blit(text_surface, text_rect)

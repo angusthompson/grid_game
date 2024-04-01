@@ -35,3 +35,24 @@ def get_neighbors(grid, x, y):
             if 0 <= nx < len(grid[0]) and 0 <= ny < len(grid) and (nx != x or ny != y):
                 neighbors.append(grid[ny][nx])
     return neighbors
+
+def get_population_neighbors(population_grid, grid, x, y):
+    population_neighbors = 0
+    for dy in range(-1, 2):
+        for dx in range(-1, 2):
+            nx, ny = x + dx, y + dy
+            if 0 <= nx < len(grid[0]) and 0 <= ny < len(grid) and (nx != x or ny != y):
+                population_neighbors += population_grid[ny][nx][0]
+    hunter_neighbors = 0
+    for dy in range(-1, 2):
+        for dx in range(-1, 2):
+            nx, ny = x + dx, y + dy
+            if 0 <= nx < len(grid[0]) and 0 <= ny < len(grid) and (nx != x or ny != y):
+                hunter_neighbors += population_grid[ny][nx][1]
+    farmer_neighbors = 0
+    for dy in range(-1, 2):
+        for dx in range(-1, 2):
+            nx, ny = x + dx, y + dy
+            if 0 <= nx < len(grid[0]) and 0 <= ny < len(grid) and (nx != x or ny != y):
+                hunter_neighbors += population_grid[ny][nx][2] 
+    return population_neighbors, hunter_neighbors, farmer_neighbors
