@@ -49,10 +49,11 @@ def update_population_caps(initial_population_caps, terrain_grid):
 
 def simulate_population_growth(population_grid, initial_population_caps, terrain_grid):
     population_caps = update_population_caps(initial_population_caps, terrain_grid)
-    size = len(terrain_grid)
+    sizey = len(terrain_grid)
+    sizex = len(terrain_grid[0])
     
-    for y in range(size):
-        for x in range(size):
+    for y in range(sizey):
+        for x in range(sizex):
             if population_grid[y][x] > population_caps[y][x]:
                 population_grid[y][x] -= 2
                 if terrain_grid[y][x] == 2:
@@ -70,7 +71,7 @@ def simulate_population_growth(population_grid, initial_population_caps, terrain
                 for dy in range(-1, 2):
                     for dx in range(-1, 2):
                         nx, ny = x + dx, y + dy
-                        if (dx != 0 or dy != 0) and 0 <= nx < size and 0 <= ny < size:
+                        if (dx != 0 or dy != 0) and 0 <= nx < sizex and 0 <= ny < sizey:
                             neighbors.append((nx, ny))
                 # Select a random neighboring tile
                 selected_tile = random.choice(neighbors)
@@ -85,7 +86,7 @@ def simulate_population_growth(population_grid, initial_population_caps, terrain
                     for dy in range(-1, 2):
                         for dx in range(-1, 2):
                             nx, ny = x + dx, y + dy
-                            if (dx != 0 or dy != 0) and 0 <= nx < size and 0 <= ny < size:
+                            if (dx != 0 or dy != 0) and 0 <= nx < sizex and 0 <= ny < sizey:
                                 if terrain_grid[ny][nx] == 2:  # Field tile
                                     terrain_grid[ny][nx] = 6  # Convert to farmland
             elif terrain_grid[y][x] == 5:  # Town tile
