@@ -45,23 +45,35 @@ def display_population_info(game_display, population, x, y, tile_x, tile_y):
     tile_surface = font.render(tile_text, True, (255, 255, 255))
 
     # Render population text
-    population_text = "Population: " + str(population)
+    population_text = "Population: " + str(population[0])
     population_surface = font.render(population_text, True, (255, 255, 255))
+
+    # Render hunter-gatherer text
+    huntergatherer_text = "Hunter-gatherers: " + str(population[1])
+    huntergatherer_surface = font.render(huntergatherer_text, True, (255, 255, 255))
 
     # Calculate text rect for population
     population_rect = population_surface.get_rect()
-    population_rect.topleft = (x + 15, y + 25)
+    population_rect.topleft = (x + 15, y + 25 + population_rect.height)
 
     # Calculate text rect for tile coordinates
     tile_rect = tile_surface.get_rect()
-    tile_rect.topleft = (x + 15, y + population_rect.height + 25)  # Shift below population text
+    tile_rect.topleft = (x + 15, y + 25)
+
+    # Calculate text rect for hunter gatherers
+    huntergatherer_rect = huntergatherer_surface.get_rect()
+    huntergatherer_rect.topleft = (x + 15, y  + population_rect.height*2 + 25)
 
     # Draw background rectangles
     pygame.draw.rect(game_display, (0, 0, 0), population_rect)  # Background color for population
     pygame.draw.rect(game_display, (0, 0, 0), tile_rect)        # Background color for tile
+    pygame.draw.rect(game_display, (0, 0, 0), huntergatherer_rect)        # Background color for tile
 
     # Blit population text onto game display
     game_display.blit(population_surface, population_rect)
 
     # Blit tile coordinates text onto game display
     game_display.blit(tile_surface, tile_rect)
+
+    # Blit hunter gatherer text onto game display
+    game_display.blit(huntergatherer_surface, huntergatherer_rect)

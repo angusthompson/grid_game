@@ -14,7 +14,7 @@ pygame.init()
 # Set up the display
 WINDOW_SIZE = (WINDOW_WIDTH, WINDOW_HEIGHT)
 game_display = pygame.display.set_mode(WINDOW_SIZE)
-pygame.display.set_caption('Grid Game!                                              v1.0.5')
+pygame.display.set_caption('Grid Game!                                              v1.0.6')
 
 # Main game loop
 def main():
@@ -183,4 +183,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-

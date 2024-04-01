@@ -3,7 +3,9 @@ from terrain_generation import get_neighbors
 import random
 
 def generate_population_grid(size_y, size_x, terrain_grid):
-    population_grid = np.zeros((size_y, size_x))
+    # population_grid = np.zeros((size_y, size_x))
+    population_grid = np.zeros((size_y, size_x, 8), dtype=int)
+
     initial_population_caps = np.zeros((size_y, size_x))
 
     # Randomly select one box for initial population
@@ -22,7 +24,7 @@ def generate_population_grid(size_y, size_x, terrain_grid):
                 initial_population_caps[y][x] = random_integer
 
     # Allocate population between 1 and 5 in the selected box
-    population_grid[initial_box_y][initial_box_x] = np.random.randint(1, 6)
+    population_grid[initial_box_y][initial_box_x][0] = np.random.randint(1, 6)
 
     return population_grid, initial_population_caps
 
@@ -56,18 +58,18 @@ def simulate_population_growth(population_grid, initial_population_caps, terrain
     
     for y in range(sizey):
         for x in range(sizex):
-            if population_grid[y][x] > population_caps[y][x]:
-                population_grid[y][x] -= 2
+            if population_grid[y][x][0] > population_caps[y][x]:
+                population_grid[y][x][0] -= 2
                 if terrain_grid[y][x] == 2:
-                    population_grid[y][x] -= 2
+                    population_grid[y][x][0] -= 2
                 if terrain_grid[y][x] == 3:
-                    population_grid[y][x] -= 4
+                    population_grid[y][x][0] -= 4
                 if terrain_grid[y][x] == 4:
-                    population_grid[y][x] -= 4
+                    population_grid[y][x][0] -= 4
                 if terrain_grid[y][x] == 5:
-                    population_grid[y][x] -= 6
+                    population_grid[y][x][0] -= 6
                 if terrain_grid[y][x] == 6:
-                    population_grid[y][x] -= 2
+                    population_grid[y][x][0] -= 2
                 # Find neighboring tiles
                 neighbors = []
                 for dy in range(-1, 2):
@@ -81,11 +83,11 @@ def simulate_population_growth(population_grid, initial_population_caps, terrain
                 population_grid[selected_tile[1]][selected_tile[0]] += 2
                 
             if terrain_grid[y][x] == 2 or terrain_grid[y][x] == 6:  # Field tile
-                if population_grid[y][x] > 0:
-                    population_grid[y][x] += 1
-                if population_grid[y][x] < 1:
+                if population_grid[y][x][0] > 0:
+                    population_grid[y][x][0] += 1
+                if population_grid[y][x][0] < 1:
                     terrain_grid[y][x] = 2  # Convert back to fields
-                if population_grid[y][x] > 24:
+                if population_grid[y][x][0] > 24:
                     terrain_grid[y][x] = 5  # Convert to town
                     for dy in range(-1, 2):
                         for dx in range(-1, 2):
@@ -94,12 +96,12 @@ def simulate_population_growth(population_grid, initial_population_caps, terrain
                                 if terrain_grid[ny][nx] == 2:  # Field tile
                                     terrain_grid[ny][nx] = 6  # Convert to farmland
                                     population_grid[ny][nx] +=1
-            elif population_grid[y][x] > 40:
+            elif population_grid[y][x][0] > 40:
                 terrain_grid[y][x] = 7  # Convert to city
             elif terrain_grid[y][x] == 5:  # Town tile
-                if population_grid[y][x] < population_caps[y][x]:
-                    population_grid[y][x] += 1
-                if population_grid[y][x] < 25:
+                if population_grid[y][x][0] < population_caps[y][x]:
+                    population_grid[y][x][0] += 1
+                if population_grid[y][x][0] < 25:
                     terrain_grid[y][x] = 6  # Convert back to fields
 
 
