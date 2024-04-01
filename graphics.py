@@ -13,6 +13,7 @@ BLACK = (0, 0, 0)
 DARK_ORANGE = (255, 140, 0)
 DARK_GREEN = (0, 100, 0)
 DARK_GREY = ((64, 128, 128))
+RED = (255, 80, 80)
 
 # Define constants
 # GRID_SIZE = 60
@@ -22,8 +23,6 @@ BUTTON_COLOR = (200, 200, 200)
 BUTTON_HOVER_COLOR = (150, 150, 150)
 BUTTON_TEXT_COLOR = (0, 0, 0)
 BUTTON_TEXT_HOVER_COLOR = (255, 255, 255)
-
-
 
 
 # Function to draw terrain
@@ -46,10 +45,12 @@ def determine_terrain_color(terrain_type):
         return GREY
     elif terrain_type == 4:
         return YELLOW
-    elif terrain_type == 5:  # Town
+    elif terrain_type == 5:  # Village
         return DARK_ORANGE
     elif terrain_type == 6:  # Farmland
         return DARK_GREEN
+    elif terrain_type == 7:  # Town
+        return RED
     
 
 def draw_terrain_and_population(terrain_grid, population_grid, cell_size):
