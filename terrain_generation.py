@@ -20,7 +20,7 @@ def update_terrain_grid(terrain_grid):
             neighbors = get_neighbors(terrain_grid, x, y)
             most_common_neighbor = max(set(neighbors), key=neighbors.count)
             random_integer = random.randint(0, 10)
-            if random_integer > 4:
+            if random_integer > 2:
                 new_terrain_grid[y][x] = most_common_neighbor
             else:
                 new_terrain_grid[y][x] = terrain_grid[y][x]
