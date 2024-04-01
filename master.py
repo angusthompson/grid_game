@@ -5,8 +5,8 @@ import random
 from ui import draw_button, is_hover, WHITE, BLACK, GRAY, LIGHT_GRAY, DARK_GRAY, GREEN, WINDOW_WIDTH, WINDOW_HEIGHT, UI_WIDTH, UI_HEIGHT, UI_POSITION, BUTTON_WIDTH, BUTTON_HEIGHT, BUTTON_MARGIN, display_population_info
 from population_simulation import generate_population_grid, initial_population_caps, update_population_caps, simulate_population_growth, generate_road_grid
 from terrain_generation import generate_terrain_grid
-from graphics import draw_terrain, determine_terrain_color, draw_terrain_and_population, draw_road_overlay
-from primitive_movement import move_population_up, move_population_down, move_population_left, move_population_right
+from graphics import draw_terrain, determine_terrain_color, draw_terrain_and_population, draw_road_overlay, draw_tribe_location
+from primitive_movement import move_population_up, move_population_down, move_population_left, move_population_right, find_starting_location
 
 # Initialize Pygame
 pygame.init()
@@ -39,6 +39,7 @@ def main():
     button_labels = ['^', 'v', '<-', '->','-','-','-','-','SU','SD','SL','SR','-','-','-','-']
 
     current_tribe_location = (0, 0)
+    current_tribe_location = find_starting_location(population_grid)
 
     while True:
 
@@ -78,6 +79,8 @@ def main():
         road_grid = generate_road_grid(population_grid, terrain_grid, population_grid)
 
         draw_road_overlay(len(road_grid), len(road_grid[0]), road_grid)
+
+        draw_tribe_location(current_tribe_location, cell_size)  # Draw the population grid
 
         # Handle events
         for event in pygame.event.get():

@@ -23,6 +23,9 @@ BUTTON_COLOR = (200, 200, 200)
 BUTTON_HOVER_COLOR = (150, 150, 150)
 BUTTON_TEXT_COLOR = (0, 0, 0)
 BUTTON_TEXT_HOVER_COLOR = (255, 255, 255)
+# Assuming these constants are defined in your code
+PURPLE = (128, 0, 128)
+TILE_SIZE = 12  # Adjust this value as per your tile size
 
 
 # Function to draw terrain
@@ -75,3 +78,11 @@ def draw_road_overlay(x_size, y_size, road_grid):
     #             # Draw a thick border around tiles with roads
     #             pygame.draw.rect(game_display, BLACK, (x * BOX_SIZE, y * BOX_SIZE, BOX_SIZE, BOX_SIZE), 3)
     return('hello')
+
+def draw_tribe_location(current_tribe_location, cell_size):
+    x, y = current_tribe_location
+    # Calculate the pixel coordinates of the tile
+    tile_x = x * cell_size
+    tile_y = y * cell_size
+    # Draw a purple border around the tile
+    pygame.draw.rect(game_display, PURPLE, (tile_x, tile_y, cell_size, cell_size), 1)
