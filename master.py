@@ -2,7 +2,7 @@ import pygame
 import sys
 import numpy as np
 import random
-from ui import draw_button, is_hover, WHITE, BLACK, GRAY, LIGHT_GRAY, DARK_GRAY, GREEN, WINDOW_WIDTH, WINDOW_HEIGHT, UI_WIDTH, UI_HEIGHT, UI_POSITION, BUTTON_WIDTH, BUTTON_HEIGHT, BUTTON_MARGIN
+from ui import draw_button, is_hover, WHITE, BLACK, GRAY, LIGHT_GRAY, DARK_GRAY, GREEN, WINDOW_WIDTH, WINDOW_HEIGHT, UI_WIDTH, UI_HEIGHT, UI_POSITION, BUTTON_WIDTH, BUTTON_HEIGHT, BUTTON_MARGIN, display_population_info
 from population_simulation import generate_population_grid, initial_population_caps, update_population_caps, simulate_population_growth, generate_road_grid
 from terrain_generation import generate_terrain_grid
 from graphics import draw_terrain, determine_terrain_color, draw_terrain_and_population, draw_road_overlay
@@ -31,6 +31,10 @@ def main():
     cell_width = (WINDOW_WIDTH - UI_WIDTH) // x_size
     cell_height = WINDOW_HEIGHT // y_size
     cell_size = 12
+    TILE_WIDTH = cell_size
+    TILE_HEIGHT = cell_size
+    GRID_WIDTH = cell_width*x_size
+    GRID_HEIGHT = cell_height*y_size
 
     button_labels = ['^', 'v', '<-', '->','-','-','-','-','SU','SD','SL','SR','-','-','-','-']
 
@@ -38,11 +42,11 @@ def main():
 
     while True:
 
-        # Get mouse position
-        mouse_pos = pygame.mouse.get_pos()
-
         # Clear the display
         game_display.fill(WHITE)
+
+        # Get mouse position
+        mouse_pos = pygame.mouse.get_pos()
 
         # Draw main game window
         pygame.draw.rect(game_display, BLACK, (0, 0, WINDOW_WIDTH - UI_WIDTH, WINDOW_HEIGHT))
@@ -58,6 +62,18 @@ def main():
         button_2_rect = pygame.Rect(UI_POSITION[0] + 10, UI_POSITION[1] + 10 + (BUTTON_HEIGHT + BUTTON_MARGIN) * 1, BUTTON_WIDTH, BUTTON_HEIGHT)
         button_3_rect = pygame.Rect(UI_POSITION[0] + 10, UI_POSITION[1] + 10 + (BUTTON_HEIGHT + BUTTON_MARGIN) * 2, BUTTON_WIDTH, BUTTON_HEIGHT)
         button_4_rect = pygame.Rect(UI_POSITION[0] + 10, UI_POSITION[1] + 10 + (BUTTON_HEIGHT + BUTTON_MARGIN) * 3, BUTTON_WIDTH, BUTTON_HEIGHT)
+
+        mouse_x, mouse_y = pygame.mouse.get_pos()
+
+        # Draw population info boxes
+        if 0 <= mouse_x < WINDOW_WIDTH and 0 <= mouse_y < WINDOW_HEIGHT:
+            # Calculate tile coordinates based on mouse position
+            tile_x = (mouse_x // TILE_WIDTH)
+            tile_y = (mouse_y // TILE_HEIGHT)
+                    
+            # Display population info box when hovering over a tile
+            if 0 <= tile_x < x_size and 0 <= tile_y < y_size:
+                display_population_info(game_display, population_grid[tile_y][tile_x], mouse_x, mouse_y, tile_x, tile_y)
         
         road_grid = generate_road_grid(population_grid, terrain_grid, population_grid)
 
@@ -167,3 +183,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+
