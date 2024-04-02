@@ -74,6 +74,14 @@ def display_population_info(game_display, population, population_caps_grid, x, y
     farmer_rect.topleft = (x + 15, y  + population_rect.height*3 + 25)
     pygame.draw.rect(game_display, (0, 0, 0), farmer_rect)        # Background color for farmers
 
+    # Render merchant text
+    merchant_text = "Merchants: " + str(population[3])
+    merchant_surface = font.render(merchant_text, True, (255, 255, 255))
+    # Calculate text rect for merchants
+    merchant_rect = merchant_surface.get_rect()
+    merchant_rect.topleft = (x + 15, y  + population_rect.height*4 + 25)
+    pygame.draw.rect(game_display, (0, 0, 0), merchant_rect)        # Background color for merchants
+
 
     # Blit population text onto game display
     game_display.blit(population_surface, population_rect)
@@ -86,3 +94,6 @@ def display_population_info(game_display, population, population_caps_grid, x, y
 
     # Blit hunter gatherer text onto game display
     game_display.blit(farmer_surface, farmer_rect)
+
+    # Blit hunter gatherer text onto game display
+    game_display.blit(merchant_surface, merchant_rect)

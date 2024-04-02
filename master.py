@@ -7,6 +7,7 @@ from population_simulation import generate_population_grid, initial_population_c
 from terrain_generation import generate_terrain_grid
 from graphics import draw_terrain, determine_terrain_color, draw_terrain_and_population, draw_road_overlay, draw_tribe_location
 from primitive_movement import move_population_up, move_population_down, move_population_left, move_population_right, find_starting_location, convert_to_farmers
+from controls import move_down, move_left, move_right, move_up, advance, convert_to_farmers_button
 
 # Initialize Pygame
 pygame.init()
@@ -20,8 +21,8 @@ pygame.display.set_caption('Grid Game!                                          
 def main():
     # Generate terrain grid
     # Define the size of the x and y axes separately
-    x_size = 106
-    y_size = 67
+    x_size = 53
+    y_size = 33
     # Generate terrain grid
     terrain_grid = generate_terrain_grid(size_x=x_size, size_y=y_size, num_iterations=5)
     population_grid, initial_caps = generate_population_grid(size_y=y_size, size_x=x_size, terrain_grid=terrain_grid)
@@ -31,7 +32,7 @@ def main():
     # Calculate cell sizes based on the dimensions of the window and terrain grid
     cell_width = (WINDOW_WIDTH - UI_WIDTH) // x_size
     cell_height = WINDOW_HEIGHT // y_size
-    cell_size = 12
+    cell_size = 24
     TILE_WIDTH = cell_size
     TILE_HEIGHT = cell_size
     GRID_WIDTH = cell_width*x_size
@@ -89,98 +90,35 @@ def main():
                 pygame.quit()
                 sys.exit()
             elif event.type == pygame.MOUSEBUTTONDOWN:
+                # Check for button clicks
                 if is_hover(pygame.mouse.get_pos(), advance_button_rect):
-                    # Update population caps
-                    population_caps_grid = update_population_caps(initial_population_caps_grid, terrain_grid, population_grid)
-                    # Simulate population growth
-                    population_grid, terrain_grid = simulate_population_growth(current_tribe_location, population_grid, population_caps_grid, terrain_grid)
-                    # Generate road grid
-                    road_grid = generate_road_grid(population_grid, terrain_grid, population_grid)
-
+                    population_grid, terrain_grid, current_tribe_location, population_caps_grid, road_grid = advance(population_grid, terrain_grid, current_tribe_location, population_caps_grid, initial_population_caps_grid)
                 elif is_hover(pygame.mouse.get_pos(), button_1_rect):
-                    # Simulate the 'Up' button click
-                    population_grid, current_tribe_location = move_population_up(population_grid, terrain_grid, current_tribe_location)
-                    population_grid, terrain_grid = simulate_population_growth(current_tribe_location, population_grid, population_caps_grid, terrain_grid)
-                    population_caps_grid = update_population_caps(initial_population_caps_grid, terrain_grid, population_grid)
-                    road_grid = generate_road_grid(population_grid, terrain_grid, population_grid)
-
+                    population_grid, terrain_grid, current_tribe_location, population_caps_grid, road_grid = move_up(population_grid, terrain_grid, current_tribe_location, population_caps_grid, initial_population_caps_grid)
                 elif is_hover(pygame.mouse.get_pos(), button_2_rect):
-                    # Simulate the 'Down' button click
-                    population_grid, current_tribe_location = move_population_down(population_grid, terrain_grid, current_tribe_location)
-                    population_grid, terrain_grid = simulate_population_growth(current_tribe_location, population_grid, population_caps_grid, terrain_grid)
-                    population_caps_grid = update_population_caps(initial_population_caps_grid, terrain_grid, population_grid)
-                    road_grid = generate_road_grid(population_grid, terrain_grid, population_grid)
-                
+                    population_grid, terrain_grid, current_tribe_location, population_caps_grid, road_grid = move_down(population_grid, terrain_grid, current_tribe_location, population_caps_grid, initial_population_caps_grid)
                 elif is_hover(pygame.mouse.get_pos(), button_3_rect):
-                    # Simulate the 'Left' button click
-                    population_grid, current_tribe_location = move_population_left(population_grid, terrain_grid, current_tribe_location)
-                    population_grid, terrain_grid = simulate_population_growth(current_tribe_location, population_grid, population_caps_grid, terrain_grid)
-                    population_caps_grid = update_population_caps(initial_population_caps_grid, terrain_grid, population_grid)
-                    road_grid = generate_road_grid(population_grid, terrain_grid, population_grid)
-                
+                    population_grid, terrain_grid, current_tribe_location, population_caps_grid, road_grid = move_left(population_grid, terrain_grid, current_tribe_location, population_caps_grid, initial_population_caps_grid)
                 elif is_hover(pygame.mouse.get_pos(), button_4_rect):
-                    # Simulate the 'Right' button click
-                    population_grid, current_tribe_location = move_population_right(population_grid, terrain_grid, current_tribe_location)
-                    population_grid, terrain_grid = simulate_population_growth(current_tribe_location, population_grid, population_caps_grid, terrain_grid)
-                    population_caps_grid = update_population_caps(initial_population_caps_grid, terrain_grid, population_grid)
-                    road_grid = generate_road_grid(population_grid, terrain_grid, population_grid)
-
+                    population_grid, terrain_grid, current_tribe_location, population_caps_grid, road_grid = move_right(population_grid, terrain_grid, current_tribe_location, population_caps_grid, initial_population_caps_grid)
                 elif is_hover(pygame.mouse.get_pos(), button_5_rect):
-                    # Convert population to farmers and update terrain when button 5 is clicked
-                    convert_to_farmers(population_grid, terrain_grid, current_tribe_location)
-                    # Update population caps
-                    population_caps_grid = update_population_caps(initial_population_caps_grid, terrain_grid, population_grid)
-                    # Simulate population growth
-                    population_grid, terrain_grid = simulate_population_growth(current_tribe_location, population_grid, population_caps_grid, terrain_grid)
-                    # Generate road grid
-                    road_grid = generate_road_grid(population_grid, terrain_grid, population_grid)
-
+                    population_grid, terrain_grid, population_caps_grid, road_grid = convert_to_farmers_button(population_grid, terrain_grid, current_tribe_location, population_caps_grid, initial_population_caps_grid)
             elif event.type == pygame.KEYDOWN:
+                # Check for keyboard input
                 if event.key == pygame.K_UP:
-                    # Simulate the 'Up' button click
-                    population_grid, current_tribe_location = move_population_up(population_grid, terrain_grid, current_tribe_location)
-                    population_grid, terrain_grid = simulate_population_growth(current_tribe_location, population_grid, population_caps_grid, terrain_grid)
-                    population_caps_grid = update_population_caps(initial_population_caps_grid, terrain_grid, population_grid)
-                    road_grid = generate_road_grid(population_grid, terrain_grid, population_grid)
-
+                    population_grid, terrain_grid, current_tribe_location, population_caps_grid, road_grid = move_up(population_grid, terrain_grid, current_tribe_location, population_caps_grid, initial_population_caps_grid)
                 elif event.key == pygame.K_DOWN:
-                    # Simulate the 'Down' button click
-                    population_grid, current_tribe_location = move_population_down(population_grid, terrain_grid, current_tribe_location)
-                    population_grid, terrain_grid = simulate_population_growth(current_tribe_location, population_grid, population_caps_grid, terrain_grid)
-                    population_caps_grid = update_population_caps(initial_population_caps_grid, terrain_grid, population_grid)
-                    road_grid = generate_road_grid(population_grid, terrain_grid, population_grid)
-                
+                    population_grid, terrain_grid, current_tribe_location, population_caps_grid, road_grid = move_down(population_grid, terrain_grid, current_tribe_location, population_caps_grid, initial_population_caps_grid)
                 elif event.key == pygame.K_LEFT:
-                    # Simulate the 'Left' button click
-                    population_grid, current_tribe_location = move_population_left(population_grid, terrain_grid, current_tribe_location)
-                    population_grid, terrain_grid = simulate_population_growth(current_tribe_location, population_grid, population_caps_grid, terrain_grid)
-                    population_caps_grid = update_population_caps(initial_population_caps_grid, terrain_grid, population_grid)
-                    road_grid = generate_road_grid(population_grid, terrain_grid, population_grid)
-                
+                    population_grid, terrain_grid, current_tribe_location, population_caps_grid, road_grid = move_left(population_grid, terrain_grid, current_tribe_location, population_caps_grid, initial_population_caps_grid)
                 elif event.key == pygame.K_RIGHT:
-                    # Simulate the 'Right' button click
-                    population_grid, current_tribe_location = move_population_right(population_grid, terrain_grid, current_tribe_location)
-                    population_grid, terrain_grid = simulate_population_growth(current_tribe_location, population_grid, population_caps_grid, terrain_grid)
-                    population_caps_grid = update_population_caps(initial_population_caps_grid, terrain_grid, population_grid)
-                    road_grid = generate_road_grid(population_grid, terrain_grid, population_grid)
-
+                    population_grid, terrain_grid, current_tribe_location, population_caps_grid, road_grid = move_right(population_grid, terrain_grid, current_tribe_location, population_caps_grid, initial_population_caps_grid)
                 elif event.key == pygame.K_RETURN:
-                    # Update population caps
-                    population_caps_grid = update_population_caps(initial_population_caps_grid, terrain_grid, population_grid)
-                    # Simulate population growth
-                    population_grid, terrain_grid = simulate_population_growth(current_tribe_location, population_grid, population_caps_grid, terrain_grid)
-                    # Generate road grid
-                    road_grid = generate_road_grid(population_grid, terrain_grid, population_grid)
-
-                elif event.key == pygame.K_s:  # Handle 's' key press
-                    # Convert population to farmers and update terrain
-                    convert_to_farmers(population_grid, terrain_grid, current_tribe_location)
-                    # Update population caps
-                    population_caps_grid = update_population_caps(initial_population_caps_grid, terrain_grid, population_grid)
-                    # Simulate population growth
-                    population_grid, terrain_grid = simulate_population_growth(current_tribe_location, population_grid, population_caps_grid, terrain_grid)
-                    # Generate road grid
-                    road_grid = generate_road_grid(population_grid, terrain_grid, population_grid)
+                    population_grid, terrain_grid, current_tribe_location, population_caps_grid, road_grid = advance(population_grid, terrain_grid, current_tribe_location, population_caps_grid, initial_population_caps_grid)
+                elif event.key == pygame.K_SPACE:
+                    population_grid, terrain_grid, current_tribe_location, population_caps_grid, road_grid = advance(population_grid, terrain_grid, current_tribe_location, population_caps_grid, initial_population_caps_grid)
+                elif event.key == pygame.K_s:
+                    population_grid, terrain_grid, population_caps_grid, road_grid = convert_to_farmers_button(population_grid, terrain_grid, current_tribe_location, population_caps_grid, initial_population_caps_grid)
                         
         # Draw buttons
         button_positions = []

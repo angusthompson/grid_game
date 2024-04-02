@@ -5,12 +5,12 @@ def move_population_up(population_grid, terrain_grid, current_tribe_location):
     if population_grid[y][x][1] == 0:
         population_grid[y][x][1] = 3
     # Check if the tile above is not sea
-    if y > 0 and terrain_grid[y - 1][x] != 1:
+    if y > 0:
         # Move the population to the tile above
         population_grid[y - 1][x][1] += population_grid[y][x][1]
         population_grid[y][x][1] = 0
         current_tribe_location = (x, y - 1)
-        if population_grid[y-1][x][1] < 3:
+        if population_grid[y-1][x][1] == 0:
             population_grid[y-1][x][1] = 3
         
     return population_grid, current_tribe_location
@@ -19,13 +19,12 @@ def move_population_down(population_grid, terrain_grid, current_tribe_location):
     x, y = current_tribe_location
     if population_grid[y][x][1] == 0:
         population_grid[y][x][1] = 3
-    # Check if the tile below is not sea
-    if y < len(population_grid) - 1 and terrain_grid[y + 1][x] != 1:
+    if y < len(population_grid) - 1:
         # Move the population to the tile below
         population_grid[y + 1][x][1] += population_grid[y][x][1]
         population_grid[y][x][1] = 0
         current_tribe_location = (x, y + 1)
-        if population_grid[y+1][x][1] < 3:
+        if population_grid[y+1][x][1] == 0:
             population_grid[y+1][x][1] = 3
 
     return population_grid, current_tribe_location
@@ -34,13 +33,12 @@ def move_population_left(population_grid, terrain_grid, current_tribe_location):
     x, y = current_tribe_location
     if population_grid[y][x][1] == 0:
         population_grid[y][x][1] = 3
-    # Check if the tile to the left is not sea
-    if x > 0 and terrain_grid[y][x - 1] != 1:
+    if x > 0:
         # Move the population to the tile to the left
         population_grid[y][x - 1][1] += population_grid[y][x][1]
         population_grid[y][x][1] = 0
         current_tribe_location = (x - 1, y)
-        if population_grid[y][x-1][1] < 3:
+        if population_grid[y][x-1][1] == 0:
             population_grid[y][x-1][1] = 3
         
     return population_grid, current_tribe_location
@@ -49,13 +47,12 @@ def move_population_right(population_grid, terrain_grid, current_tribe_location)
     x, y = current_tribe_location
     if population_grid[y][x][1] == 0:
         population_grid[y][x][1] = 3
-    # Check if the tile to the right is not sea
-    if x < len(population_grid[0]) - 1 and terrain_grid[y][x + 1] != 1:
+    if x < len(population_grid[0]) - 1:
         # Move the population to the tile to the right
         population_grid[y][x + 1][1] += population_grid[y][x][1]
         population_grid[y][x][1] = 0
         current_tribe_location = (x + 1, y)
-        if population_grid[y][x+1][1] < 3:
+        if population_grid[y][x+1][1] == 0:
             population_grid[y][x+1][1] = 3
         
     return population_grid, current_tribe_location

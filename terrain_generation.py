@@ -38,21 +38,19 @@ def get_neighbors(grid, x, y):
 
 def get_population_neighbors(population_grid, grid, x, y):
     population_neighbors = 0
-    for dy in range(-1, 2):
-        for dx in range(-1, 2):
-            nx, ny = x + dx, y + dy
-            if 0 <= nx < len(grid[0]) and 0 <= ny < len(grid) and (nx != x or ny != y):
-                population_neighbors += population_grid[ny][nx][0]
     hunter_neighbors = 0
-    for dy in range(-1, 2):
-        for dx in range(-1, 2):
-            nx, ny = x + dx, y + dy
-            if 0 <= nx < len(grid[0]) and 0 <= ny < len(grid) and (nx != x or ny != y):
-                hunter_neighbors += population_grid[ny][nx][1]
     farmer_neighbors = 0
-    for dy in range(-1, 2):
-        for dx in range(-1, 2):
-            nx, ny = x + dx, y + dy
-            if 0 <= nx < len(grid[0]) and 0 <= ny < len(grid) and (nx != x or ny != y):
-                hunter_neighbors += population_grid[ny][nx][2] 
-    return population_neighbors, hunter_neighbors, farmer_neighbors
+    merchant_neighbors = 0
+    if population_grid[y][x][0] > 0:
+        for dy in range(-1, 2):
+            for dx in range(-1, 2):
+                nx, ny = x + dx, y + dy
+                if 0 <= nx < len(grid[0]) and 0 <= ny < len(grid) and (nx != x or ny != y):
+                    population_neighbors += population_grid[ny][nx][0]
+                if 0 <= nx < len(grid[0]) and 0 <= ny < len(grid) and (nx != x or ny != y):
+                    hunter_neighbors += population_grid[ny][nx][1]
+                if 0 <= nx < len(grid[0]) and 0 <= ny < len(grid) and (nx != x or ny != y):
+                    hunter_neighbors += population_grid[ny][nx][2]
+                if 0 <= nx < len(grid[0]) and 0 <= ny < len(grid) and (nx != x or ny != y):
+                    merchant_neighbors += population_grid[ny][nx][3]
+    return population_neighbors, hunter_neighbors, farmer_neighbors, merchant_neighbors
