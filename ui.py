@@ -9,8 +9,8 @@ DARK_GRAY = (150, 150, 150)
 GREEN = (0, 255, 0)
 
 # Define sizes and positions for UI elements
-UI_WIDTH = 130
-WINDOW_WIDTH = 1400  # Increased width
+UI_WIDTH = 180
+WINDOW_WIDTH = 1450  # Increased width
 WINDOW_HEIGHT = 800
 UI_HEIGHT = WINDOW_HEIGHT
 UI_POSITION = (WINDOW_WIDTH - UI_WIDTH, 0)
@@ -97,3 +97,21 @@ def display_population_info(game_display, population, population_caps_grid, x, y
 
     # Blit hunter gatherer text onto game display
     game_display.blit(merchant_surface, merchant_rect)
+
+def counters(surface, turn_counter, stage):
+        # Display turn counter
+        font = pygame.font.Font(None, 18)
+        turn_text = f"Turn: {turn_counter}"
+        turn_surface = font.render(turn_text, True, (0, 0, 0))
+        surface.blit(turn_surface, (UI_POSITION[0] + 10, UI_HEIGHT - 100))
+
+        if stage == 0:
+             stage_name = 'Hunter-Gatherers'
+        if stage == 1:
+             stage_name = 'Farming Communities'
+        elif stage > 1:
+             stage_name = 'Broken History'
+        # Display stage
+        stage_text = f"Stage: {stage_name}"
+        stage_surface = font.render(stage_text, True, (0, 0, 0))
+        surface.blit(stage_surface, (UI_POSITION[0] + 10, UI_HEIGHT - 80))

@@ -72,10 +72,12 @@ def find_starting_location(population_grid):
     return starting_location
 
 # Function to convert population to farmers and update terrain
-def convert_to_farmers(population_grid, terrain_grid, current_tribe_location):
+def convert_to_farmers(population_grid, terrain_grid, current_tribe_location, stage):
     x, y = current_tribe_location
     total_population = population_grid[y][x][0]
-    farmers_count = int(total_population * 0.5)  # Convert 80% of the population to farmers
+    farmers_count = int(total_population * 0.3)  # Convert 30% of the population to farmers
     population_grid[y][x][2] = farmers_count  # Update the population grid with the new farmer count
     population_grid[y][x][1] -= farmers_count  # Reduce the hunter-gatherer count accordingly
     terrain_grid[y][x] = 6  # Convert the tile to farmland
+    # stage += 1
+    return stage
