@@ -1,5 +1,5 @@
 import numpy as np
-from terrain_generation import get_neighbors, get_population_neighbors
+from terrain_generation import get_neighbors, get_population_neighbors, get_name
 import random
 import math
 
@@ -30,7 +30,9 @@ def generate_population_grid(size_y, size_x, terrain_grid):
         for x in range(size_x):
             population_grid[y][x][0] = sum(population_grid[y][x][1:])
 
-    return population_grid, initial_population_caps
+    town_names = []
+    town_positions = []
+    return population_grid, initial_population_caps, town_names, town_positions
 
 
 def initial_population_caps(terrain_grid):
@@ -68,10 +70,10 @@ def update_population_caps(initial_population_caps, terrain_grid, population_gri
             if terrain_grid[y][x] == 5:  # Pop caps for towns
                 # updated_population_caps[y][x] -= 0.3 * hunter_neighbors
                 updated_population_caps[y][x] += 20
-                updated_population_caps[y][x] += 0.3 * farmer_neighbors
+                updated_population_caps[y][x] += 0.5 * farmer_neighbors
                 updated_population_caps[y][x] -= 0.1 * merchant_neighbors
-                updated_population_caps[y][x] += 4 * sea_count
-                updated_population_caps[y][x] -= 0.2 * population_grid[y][x][3]
+                updated_population_caps[y][x] += 3 * sea_count
+                # updated_population_caps[y][x] -= 0.2 * population_grid[y][x][3]
 
             if terrain_grid[y][x] == 6:  # Pop caps for farmlands
                 updated_population_caps[y][x] += 10
@@ -79,7 +81,7 @@ def update_population_caps(initial_population_caps, terrain_grid, population_gri
                 updated_population_caps[y][x] -= 0.2 * hunter_neighbors
                 updated_population_caps[y][x] += 0.2 * farmer_neighbors
                 updated_population_caps[y][x] += 0.3 * merchant_neighbors
-                updated_population_caps[y][x] -= 0.1 * population_grid[y][x][2]
+                # updated_population_caps[y][x] -= 0.1 * population_grid[y][x][2]
                 updated_population_caps[y][x] -= 0.2 * population_grid[y][x][3]
 
     
@@ -120,7 +122,7 @@ def simulate_population_growth(current_tribe_location, population_grid, updated_
 
                     elif terrain_grid[y][x] == 5:            # Growth in towns
                         population_grid[y][x][2] -= population_grid[y][x][2]*0.5
-                        population_grid[y][x][3] += population_grid[y][x][2]*0.3
+                        population_grid[y][x][3] += population_grid[y][x][2]*0.2
                         population_grid[y][x][3] += population_grid[y][x][3]*0.3
                         population_grid[y][x][3] += 0.5 * farmer_neighbors
                         population_grid[y][x][3] -= 0.3 * merchant_neighbors
@@ -132,7 +134,7 @@ def simulate_population_growth(current_tribe_location, population_grid, updated_
     return population_grid, terrain_grid
 
 
-def simulate_population_attrition(current_tribe_location, population_grid, updated_population_caps, terrain_grid):
+def simulate_population_attrition(current_tribe_location, population_grid, updated_population_caps, terrain_grid, town_names, town_positions):
     size_y, size_x, _ = population_grid.shape
     currentx, currenty = current_tribe_location
 
@@ -243,20 +245,34 @@ def simulate_population_attrition(current_tribe_location, population_grid, updat
                         population_grid[y][x][2] = 0
                         population_grid[y][x][3] = pop_cap
 
-                    
-
             population_grid[y][x][0] = int(sum(population_grid[y][x][1:]))      # Terrain development mechanics
             if terrain_grid[y][x] == 2 and population_grid[y][x][2] > 0:
                 terrain_grid[y][x] = 6
             if terrain_grid[y][x] == 6 and population_grid[y][x][2] > 35:
                 terrain_grid[y][x] = 5
-            if terrain_grid[y][x] == 5 and population_grid[y][x][0] < 20:
-                terrain_grid[y][x] = 6
+                name, position = get_name(y, x)
+                town_names.append(name)
+                town_positions.append(position)
+            # if terrain_grid[y][x] == 5 and population_grid[y][x][0] < 20:
+            #     terrain_grid[y][x] = 6
             if terrain_grid[y][x] == 1 and population_grid[y][x][0] > 5:
                 if population_grid[y][x][1] > population_grid [y][x][2]:
                     population_grid[y][x][1] = 5
                 else:
                     population_grid[y][x][2] = 5
+
+    towns_to_remove = []
+
+    for i, (town_name, town_position) in enumerate(zip(town_names, town_positions)):
+        x, y = town_position
+        if terrain_grid[y][x] == 5 and population_grid[y][x][0] < 20:
+            towns_to_remove.append(i)
+            terrain_grid[y][x] = 6
+
+    # Remove towns that need to be removed
+    for index in sorted(towns_to_remove, reverse=True):
+        del town_names[index]
+        del town_positions[index]
     
     if population_grid[currenty][currentx][0] < 3:
         population_grid[currenty][currentx][1] = 3
@@ -266,7 +282,7 @@ def simulate_population_attrition(current_tribe_location, population_grid, updat
     population_grid[y][x][0] = sum(population_grid[y][x][1:])
 
 
-    return population_grid, terrain_grid
+    return population_grid, terrain_grid, town_names, town_positions
 
 
 

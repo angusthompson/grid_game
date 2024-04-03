@@ -98,19 +98,27 @@ def display_population_info(game_display, population, population_caps_grid, x, y
     # Blit hunter gatherer text onto game display
     game_display.blit(merchant_surface, merchant_rect)
 
-def counters(surface, turn_counter, stage):
+def counters(terrain_grid, surface, turn_counter, stage):
         # Display turn counter
-        font = pygame.font.Font(None, 18)
+        font = pygame.font.Font(None, 17)
         turn_text = f"Turn: {turn_counter}"
         turn_surface = font.render(turn_text, True, (0, 0, 0))
         surface.blit(turn_surface, (UI_POSITION[0] + 10, UI_HEIGHT - 100))
+        size_y, size_x = terrain_grid.shape
+
+        for y in range(size_y):
+            for x in range(size_x):
+                 if terrain_grid[y][x] == 5 and stage < 2:
+                      stage += 1
 
         if stage == 0:
-             stage_name = 'Hunter-Gatherers'
+            stage_name = 'Hunter-Gatherers'
         if stage == 1:
-             stage_name = 'Farming Communities'
-        elif stage > 1:
-             stage_name = 'Broken History'
+            stage_name = 'Farming Communities'
+        if stage == 2:
+            stage_name = 'Permanent Settlements'
+        elif stage > 2:
+            stage_name = 'Broken History'
         # Display stage
         stage_text = f"Stage: {stage_name}"
         stage_surface = font.render(stage_text, True, (0, 0, 0))

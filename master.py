@@ -23,19 +23,21 @@ def main():
     # Define the size of the x and y axes separately
     x_size = 53
     y_size = 33
+    cell_size = 24
     # Generate terrain grid
     terrain_grid = generate_terrain_grid(size_x=x_size, size_y=y_size, num_iterations=5)
-    population_grid, initial_caps = generate_population_grid(size_y=y_size, size_x=x_size, terrain_grid=terrain_grid)
+    population_grid, initial_caps, town_names, town_positions = generate_population_grid(size_y=y_size, size_x=x_size, terrain_grid=terrain_grid)
     population_caps_grid = initial_population_caps(terrain_grid)
     #Stage and turn
     turn_counter = 0
     stage = 0
+    town_positions = []
+    town_names = []
     initial_population_caps_grid = initial_population_caps(terrain_grid)
 
     # Calculate cell sizes based on the dimensions of the window and terrain grid
     cell_width = (WINDOW_WIDTH - UI_WIDTH) // x_size
     cell_height = WINDOW_HEIGHT // y_size
-    cell_size = 24
     TILE_WIDTH = cell_size
     TILE_HEIGHT = cell_size
     GRID_WIDTH = cell_width*x_size
@@ -95,33 +97,33 @@ def main():
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 # Check for button clicks
                 if is_hover(pygame.mouse.get_pos(), advance_button_rect):
-                    population_grid, terrain_grid, current_tribe_location, population_caps_grid, road_grid, turn_counter = advance(population_grid, terrain_grid, current_tribe_location, population_caps_grid, initial_population_caps_grid, turn_counter)
+                    population_grid, terrain_grid, current_tribe_location, population_caps_grid, road_grid, turn_counter, town_names, town_positions = advance(population_grid, terrain_grid, current_tribe_location, population_caps_grid, initial_population_caps_grid, turn_counter, town_names, town_positions)
                 elif is_hover(pygame.mouse.get_pos(), button_1_rect):
-                    population_grid, terrain_grid, current_tribe_location, population_caps_grid, road_grid, turn_counter = move_up(population_grid, terrain_grid, current_tribe_location, population_caps_grid, initial_population_caps_grid, turn_counter)
+                    population_grid, terrain_grid, current_tribe_location, population_caps_grid, road_grid, turn_counter, town_names, town_positions = move_up(population_grid, terrain_grid, current_tribe_location, population_caps_grid, initial_population_caps_grid, turn_counter, town_names, town_positions)
                 elif is_hover(pygame.mouse.get_pos(), button_2_rect):
-                    population_grid, terrain_grid, current_tribe_location, population_caps_grid, road_grid, turn_counter = move_down(population_grid, terrain_grid, current_tribe_location, population_caps_grid, initial_population_caps_grid, turn_counter)
+                    population_grid, terrain_grid, current_tribe_location, population_caps_grid, road_grid, turn_counter, town_names, town_positions = move_down(population_grid, terrain_grid, current_tribe_location, population_caps_grid, initial_population_caps_grid, turn_counter, town_names, town_positions)
                 elif is_hover(pygame.mouse.get_pos(), button_3_rect):
-                    population_grid, terrain_grid, current_tribe_location, population_caps_grid, road_grid, turn_counter = move_left(population_grid, terrain_grid, current_tribe_location, population_caps_grid, initial_population_caps_grid, turn_counter)
+                    population_grid, terrain_grid, current_tribe_location, population_caps_grid, road_grid, turn_counter, town_names, town_positions = move_left(population_grid, terrain_grid, current_tribe_location, population_caps_grid, initial_population_caps_grid, turn_counter, town_names, town_positions)
                 elif is_hover(pygame.mouse.get_pos(), button_4_rect):
-                    population_grid, terrain_grid, current_tribe_location, population_caps_grid, road_grid, turn_counter = move_right(population_grid, terrain_grid, current_tribe_location, population_caps_grid, initial_population_caps_grid, turn_counter)
+                    population_grid, terrain_grid, current_tribe_location, population_caps_grid, road_grid, turn_counter, town_names, town_positions = move_right(population_grid, terrain_grid, current_tribe_location, population_caps_grid, initial_population_caps_grid, turn_counter, town_names, town_positions)
                 elif is_hover(pygame.mouse.get_pos(), button_5_rect):
-                    population_grid, terrain_grid, population_caps_grid, road_grid, turn_counter, stage = convert_to_farmers_button(population_grid, terrain_grid, current_tribe_location, population_caps_grid, initial_population_caps_grid, turn_counter, stage)
+                    population_grid, terrain_grid, population_caps_grid, road_grid, turn_counter, stage, town_names, town_positions = convert_to_farmers_button(population_grid, terrain_grid, current_tribe_location, population_caps_grid, initial_population_caps_grid, turn_counter, stage, town_names, town_positions)
             elif event.type == pygame.KEYDOWN:
                 # Check for keyboard input
                 if event.key == pygame.K_UP:
-                    population_grid, terrain_grid, current_tribe_location, population_caps_grid, road_grid, turn_counter = move_up(population_grid, terrain_grid, current_tribe_location, population_caps_grid, initial_population_caps_grid, turn_counter)
+                    population_grid, terrain_grid, current_tribe_location, population_caps_grid, road_grid, turn_counter, town_names, town_positions = move_up(population_grid, terrain_grid, current_tribe_location, population_caps_grid, initial_population_caps_grid, turn_counter, town_names, town_positions)
                 elif event.key == pygame.K_DOWN:
-                    population_grid, terrain_grid, current_tribe_location, population_caps_grid, road_grid, turn_counter = move_down(population_grid, terrain_grid, current_tribe_location, population_caps_grid, initial_population_caps_grid, turn_counter)
+                    population_grid, terrain_grid, current_tribe_location, population_caps_grid, road_grid, turn_counter, town_names, town_positions = move_down(population_grid, terrain_grid, current_tribe_location, population_caps_grid, initial_population_caps_grid, turn_counter, town_names, town_positions)
                 elif event.key == pygame.K_LEFT:
-                    population_grid, terrain_grid, current_tribe_location, population_caps_grid, road_grid, turn_counter = move_left(population_grid, terrain_grid, current_tribe_location, population_caps_grid, initial_population_caps_grid, turn_counter)
+                    population_grid, terrain_grid, current_tribe_location, population_caps_grid, road_grid, turn_counter, town_names, town_positions = move_left(population_grid, terrain_grid, current_tribe_location, population_caps_grid, initial_population_caps_grid, turn_counter, town_names, town_positions)
                 elif event.key == pygame.K_RIGHT:
-                    population_grid, terrain_grid, current_tribe_location, population_caps_grid, road_grid, turn_counter = move_right(population_grid, terrain_grid, current_tribe_location, population_caps_grid, initial_population_caps_grid, turn_counter)
+                    population_grid, terrain_grid, current_tribe_location, population_caps_grid, road_grid, turn_counter, town_names, town_positions = move_right(population_grid, terrain_grid, current_tribe_location, population_caps_grid, initial_population_caps_grid, turn_counter, town_names, town_positions)
                 elif event.key == pygame.K_RETURN:
-                    population_grid, terrain_grid, current_tribe_location, population_caps_grid, road_grid, turn_counter = advance(population_grid, terrain_grid, current_tribe_location, population_caps_grid, initial_population_caps_grid, turn_counter)
+                    population_grid, terrain_grid, current_tribe_location, population_caps_grid, road_grid, turn_counter, town_names, town_positions = advance(population_grid, terrain_grid, current_tribe_location, population_caps_grid, initial_population_caps_grid, turn_counter, town_names, town_positions)
                 elif event.key == pygame.K_SPACE:
-                    population_grid, terrain_grid, current_tribe_location, population_caps_grid, road_grid, turn_counter = advance(population_grid, terrain_grid, current_tribe_location, population_caps_grid, initial_population_caps_grid, turn_counter)
+                    population_grid, terrain_grid, current_tribe_location, population_caps_grid, road_grid, turn_counter, town_names, town_positions = advance(population_grid, terrain_grid, current_tribe_location, population_caps_grid, initial_population_caps_grid, turn_counter, town_names, town_positions)
                 elif event.key == pygame.K_s:
-                    population_grid, terrain_grid, population_caps_grid, road_grid, turn_counter, stage = convert_to_farmers_button(population_grid, terrain_grid, current_tribe_location, population_caps_grid, initial_population_caps_grid, turn_counter, stage)
+                    population_grid, terrain_grid, population_caps_grid, road_grid, turn_counter, stage, town_names, town_positions = convert_to_farmers_button(population_grid, terrain_grid, current_tribe_location, population_caps_grid, initial_population_caps_grid, turn_counter, stage, town_names, town_positions)
                         
         # Draw buttons
         button_positions = []
@@ -139,7 +141,23 @@ def main():
 
         # Draw 'Advance' button
         draw_button(game_display, 'Advance', (UI_POSITION[0] + 10, UI_HEIGHT - BUTTON_HEIGHT - 10), (BUTTON_WIDTH * 2 + BUTTON_MARGIN, BUTTON_HEIGHT), is_hover(mouse_pos, pygame.Rect(UI_POSITION[0] + 10, UI_HEIGHT - BUTTON_HEIGHT - 10, BUTTON_WIDTH * 2 + BUTTON_MARGIN, BUTTON_HEIGHT)))
-        counters(game_display, turn_counter, stage)
+        counters(terrain_grid, game_display, turn_counter, stage)
+
+        for town_name, town_position in zip(town_names, town_positions):
+            font = pygame.font.Font(None, 20)
+            # Render merchant text
+            text = town_name
+            surface = font.render(text, True, (255, 255, 255))
+            # Calculate text rect for merchants
+            rect = surface.get_rect()
+            # Calculate the position on the game display
+            tile_y, tile_x = town_position  # Assuming town_position is in tile coordinates
+            display_y = tile_x * TILE_WIDTH
+            display_x = tile_y * TILE_HEIGHT
+
+            rect = surface.get_rect(topleft=(display_x + 25, display_y))
+            pygame.draw.rect(game_display, (0, 0, 0), rect)        # Background color for merchants
+            game_display.blit(surface, rect)
 
         # Update the display
         pygame.display.update()
