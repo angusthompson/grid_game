@@ -3,7 +3,7 @@ import random
 
 def generate_terrain_grid(size_x, size_y, num_iterations=5):
     # Generate initial terrain grid separately for x and y axes
-    terrain_grid = np.random.choice([1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4], size=(size_y, size_x))
+    terrain_grid = np.random.choice([1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4], size=(size_y, size_x))
     
     # Apply clustering algorithm
     for _ in range(num_iterations):
@@ -20,8 +20,10 @@ def update_terrain_grid(terrain_grid):
             neighbors = get_neighbors(terrain_grid, x, y)
             most_common_neighbor = max(set(neighbors), key=neighbors.count)
             random_integer = random.randint(0, 10)
-            if random_integer > 2:
-                new_terrain_grid[y][x] = most_common_neighbor
+            if y == len(terrain_grid)-1 or y == 0:
+                new_terrain_grid[y][x] = 8  
+            elif random_integer > 2:
+                new_terrain_grid[y][x] = most_common_neighbor   
             else:
                 new_terrain_grid[y][x] = terrain_grid[y][x]
     return new_terrain_grid
@@ -57,7 +59,7 @@ def get_population_neighbors(population_grid, grid, x, y):
 
 def get_name(y, x):
     prefixes = ['Port','Fort','San','Saint','Inver','Dun','Mont','Kil','New ','Nov','Novo','Nowy','New','Stara','Stary','Nan','Yan','Qing']
-    names = ['buck','guang','storn','marn','kyot','der','luck','ber','lin','par','rom','bei','piet','mos','stan','sevas','then','mad','edin','']
+    names = ['buck','guang','storn','marn','kyot','der','luck','ber','lin','par','rom','bei','piet','mos','stan','sevast','then','mad','edin','']
     capitalised_names = ['Buck','Guang','Storn','Marn','Kyot','Der','Luck','Ber','Lin','Par','Rom','Bei','Piet','Mos','Stan','Sevas','Then','Mad','Edin']
     suffixes = ['ock','och','gorod','grad','burg','berg','bourg','ness','burgh','borough','zhou','gard','to','ople','insk','ovsk','stead','ham','opol','now','']
     random_prefix = random.choice(prefixes)

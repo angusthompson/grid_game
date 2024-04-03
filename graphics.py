@@ -54,6 +54,8 @@ def determine_terrain_color(terrain_type):
         return DARK_GREEN
     elif terrain_type == 7:  # Town
         return RED
+    elif terrain_type == 8:  # Ice cap
+        return WHITE
     
 
 def draw_terrain_and_population(terrain_grid, population_grid, cell_size):

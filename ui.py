@@ -108,6 +108,8 @@ def counters(terrain_grid, surface, turn_counter, stage):
 
         for y in range(size_y):
             for x in range(size_x):
+                 if terrain_grid[y][x] == 6 and stage < 1:
+                      stage += 1
                  if terrain_grid[y][x] == 5 and stage < 2:
                       stage += 1
 

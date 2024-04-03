@@ -40,6 +40,6 @@ def advance(population_grid, terrain_grid, current_tribe_location, population_ca
 def convert_to_farmers_button(population_grid, terrain_grid, current_tribe_location, population_caps_grid, initial_population_caps_grid, turn_counter, stage, town_names, town_positions):
     # Convert population to farmers and update terrain
     convert_to_farmers(population_grid, terrain_grid, current_tribe_location, stage)
-    stage += 1
+    # stage += 1
     population_grid, terrain_grid, current_tribe_location, population_caps_grid, road_grid, turn_counter, town_names, town_positions= advance(population_grid, terrain_grid, current_tribe_location, population_caps_grid, initial_population_caps_grid, turn_counter, town_names, town_positions)
     return population_grid, terrain_grid, population_caps_grid, road_grid, turn_counter, stage, town_names, town_positions

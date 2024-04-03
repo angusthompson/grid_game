@@ -244,10 +244,23 @@ def simulate_population_attrition(current_tribe_location, population_grid, updat
                         population_grid[y][x][1] = 0
                         population_grid[y][x][2] = 0
                         population_grid[y][x][3] = pop_cap
+            if terrain_grid[y][x] == 8:
+                population_grid[y][x][1] = 0
+                population_grid[y][x][2] = 0
+                population_grid[y][x][3] = 0
 
             population_grid[y][x][0] = int(sum(population_grid[y][x][1:]))      # Terrain development mechanics
             if terrain_grid[y][x] == 2 and population_grid[y][x][2] > 0:
-                terrain_grid[y][x] = 6
+                settlement_decision = np.random.randint(0, 20)
+                if settlement_decision > 10:
+                    population_grid[y][x][2] += population_grid[y][x][1]
+                    population_grid[y][x][1] -= population_grid[y][x][1]
+                    terrain_grid[y][x] = 6
+            if terrain_grid[y][x] == 2 and population_grid[y][x][1] > 19:
+                settlement_decision = np.random.randint(0, 20)
+                if settlement_decision > 17:
+                    population_grid[y][x][2] += population_grid[y][x][1]
+                    population_grid[y][x][1] -= population_grid[y][x][1]
             if terrain_grid[y][x] == 6 and population_grid[y][x][2] > 35:
                 terrain_grid[y][x] = 5
                 name, position = get_name(y, x)
