@@ -1,11 +1,12 @@
 import pygame
+from pygame.locals import *
 import sys
 import numpy as np
 import random
 from ui import draw_button, is_hover, WHITE, BLACK, GRAY, LIGHT_GRAY, DARK_GRAY, GREEN, WINDOW_WIDTH, WINDOW_HEIGHT, UI_WIDTH, UI_HEIGHT, UI_POSITION, BUTTON_WIDTH, BUTTON_HEIGHT, BUTTON_MARGIN, display_population_info, counters
 from population_simulation import generate_population_grid, initial_population_caps, update_population_caps, simulate_population_growth, generate_road_grid
 from terrain_generation import generate_terrain_grid
-from graphics import draw_terrain, determine_terrain_color, draw_terrain_and_population, draw_road_overlay, draw_tribe_location
+from graphics import draw_terrain, determine_terrain_color, draw_terrain_and_population, draw_road_overlay, draw_tribe_location, borders
 from primitive_movement import move_population_up, move_population_down, move_population_left, move_population_right, find_starting_location, convert_to_farmers
 from controls import move_down, move_left, move_right, move_up, advance, convert_to_farmers_button
 
@@ -16,6 +17,8 @@ pygame.init()
 WINDOW_SIZE = (WINDOW_WIDTH, WINDOW_HEIGHT)
 game_display = pygame.display.set_mode(WINDOW_SIZE)
 pygame.display.set_caption('Grid Game!                                              v1.0.6')
+
+overlay_visible = False
 
 # Main game loop
 def main():
@@ -34,6 +37,7 @@ def main():
     town_positions = []
     town_names = []
     initial_population_caps_grid = initial_population_caps(terrain_grid)
+    global overlay_visible  # Add this line
 
     # Calculate cell sizes based on the dimensions of the window and terrain grid
     cell_width = (WINDOW_WIDTH - UI_WIDTH) // x_size
@@ -43,7 +47,7 @@ def main():
     GRID_WIDTH = cell_width*x_size
     GRID_HEIGHT = cell_height*y_size
 
-    button_labels = ['^', 'v', '<-', '->','S','-','-','-','SU','SD','SL','SR','-','-','-','-']
+    button_labels = ['^', 'v', '<-', '->','S','-','-','-','Borders','SD','SL','SR','-','-','-','-']
 
     current_tribe_location = (0, 0)
     current_tribe_location = find_starting_location(population_grid)
@@ -71,6 +75,8 @@ def main():
         button_3_rect = pygame.Rect(UI_POSITION[0] + 10, UI_POSITION[1] + 10 + (BUTTON_HEIGHT + BUTTON_MARGIN) * 2, BUTTON_WIDTH, BUTTON_HEIGHT)
         button_4_rect = pygame.Rect(UI_POSITION[0] + 10, UI_POSITION[1] + 10 + (BUTTON_HEIGHT + BUTTON_MARGIN) * 3, BUTTON_WIDTH, BUTTON_HEIGHT)
         button_5_rect = pygame.Rect(UI_POSITION[0] + 10, UI_POSITION[1] + 10 + (BUTTON_HEIGHT + BUTTON_MARGIN) * 4, BUTTON_WIDTH, BUTTON_HEIGHT)
+        button_10_rect = pygame.Rect(UI_POSITION[0] + 10 + (BUTTON_HEIGHT + BUTTON_MARGIN), UI_POSITION[1] + 10, BUTTON_WIDTH, BUTTON_HEIGHT)
+
         mouse_x, mouse_y = pygame.mouse.get_pos()
 
         # Draw population info boxes
@@ -108,6 +114,8 @@ def main():
                     population_grid, terrain_grid, current_tribe_location, population_caps_grid, road_grid, turn_counter, town_names, town_positions = move_right(population_grid, terrain_grid, current_tribe_location, population_caps_grid, initial_population_caps_grid, turn_counter, town_names, town_positions)
                 elif is_hover(pygame.mouse.get_pos(), button_5_rect):
                     population_grid, terrain_grid, population_caps_grid, road_grid, turn_counter, stage, town_names, town_positions = convert_to_farmers_button(population_grid, terrain_grid, current_tribe_location, population_caps_grid, initial_population_caps_grid, turn_counter, stage, town_names, town_positions)
+                elif is_hover(pygame.mouse.get_pos(), button_10_rect):
+                    overlay_visible = not overlay_visible
             elif event.type == pygame.KEYDOWN:
                 # Check for keyboard input
                 if event.key == pygame.K_UP:
@@ -158,6 +166,13 @@ def main():
             rect = surface.get_rect(topleft=(display_x + 25, display_y))
             pygame.draw.rect(game_display, (0, 0, 0), rect)        # Background color for merchants
             game_display.blit(surface, rect)
+
+
+        if overlay_visible:
+            borders(terrain_grid, population_grid)
+
+        # Update the display
+        pygame.display.flip()
 
         # Update the display
         pygame.display.update()

@@ -73,11 +73,12 @@ def update_population_caps(initial_population_caps, terrain_grid, population_gri
                 updated_population_caps[y][x] += 0.5 * farmer_neighbors
                 updated_population_caps[y][x] -= 0.1 * merchant_neighbors
                 updated_population_caps[y][x] += 3 * sea_count
-                # updated_population_caps[y][x] -= 0.2 * population_grid[y][x][3]
+                updated_population_caps[y][x] -= 0.2 * population_grid[y][x][3]
 
             if terrain_grid[y][x] == 6:  # Pop caps for farmlands
                 updated_population_caps[y][x] += 10
-                updated_population_caps[y][x] += 2 * sea_count
+                updated_population_caps[y][x] += 1 * sea_count
+                updated_population_caps[y][x] -= 3 * town_count
                 updated_population_caps[y][x] -= 0.2 * hunter_neighbors
                 updated_population_caps[y][x] += 0.2 * farmer_neighbors
                 updated_population_caps[y][x] += 0.3 * merchant_neighbors
@@ -112,22 +113,26 @@ def simulate_population_growth(current_tribe_location, population_grid, updated_
                         population_grid[y][x][1] -= 0.3 * farmer_neighbors
 
                     elif terrain_grid[y][x] == 6:            # Growth in farmlands
-                        population_grid[y][x][2] += population_grid[y][x][2]
+                        population_grid[y][x][2] += 0.5*population_grid[y][x][2]
                         population_grid[y][x][1] -= (population_grid[y][x][2]*0.5 + 2)
                         population_grid[y][x][2] += 0.2 * hunter_neighbors
                         if population_grid[y][x][1] < 0:
                             population_grid[y][x][1] = 0
                         if population_grid[y][x][2] < 0:
                             population_grid[y][x][2] = 0
+                        if population_grid[y][x][3] < 0:
+                            population_grid[y][x][3] =0
 
                     elif terrain_grid[y][x] == 5:            # Growth in towns
-                        population_grid[y][x][2] -= population_grid[y][x][2]*0.5
-                        population_grid[y][x][3] += population_grid[y][x][2]*0.2
-                        population_grid[y][x][3] += population_grid[y][x][3]*0.3
-                        population_grid[y][x][3] += 0.5 * farmer_neighbors
-                        population_grid[y][x][3] -= 0.3 * merchant_neighbors
+                        population_grid[y][x][2] -= population_grid[y][x][2]*0.1
+                        population_grid[y][x][3] += population_grid[y][x][2]*0.1
+                        population_grid[y][x][3] += population_grid[y][x][3]*0.1
+                        population_grid[y][x][3] += 0.1 * farmer_neighbors
+                        population_grid[y][x][3] -= 0.2 * merchant_neighbors
                         if population_grid[y][x][2] < 0:
                             population_grid[y][x][2] =0
+                        if population_grid[y][x][3] < 0:
+                            population_grid[y][x][3] =0
 
     if population_grid[currenty][currentx][0] < 3:
         population_grid[currenty][currentx][1] = 3
@@ -211,13 +216,13 @@ def simulate_population_attrition(current_tribe_location, population_grid, updat
                     population_grid[selected_tile[1]][selected_tile[0]][1] += expel[1]     # Emigration
                     population_grid[selected_tile[1]][selected_tile[0]][2] += expel[2]     # Emigration
                 
-                elif terrain_grid[y][x] == 6:            # Attrition in farmlands
+                elif terrain_grid[y][x] == 5:            # Attrition in towns
                     if population_grid[y][x][1] > 0 and over > 0:
                         expel[1] += over
                         population_grid[y][x][1] -= over
-                        if population_grid[y][x][1] < 0:
-                           population_grid[y][x][1] = 0 
-                        over = 0
+                        if population_grid[y][x][1] < 0 and population_grid[y][x][2] <= 0:
+                            population_grid[y][x][1] = 0 
+                            over = 0
                         if population_grid[y][x][1] < 0 and population_grid[y][x][2] > 0:
                             over += abs(population_grid[y][x][1])
                             expel[2] += over + 2
@@ -225,12 +230,13 @@ def simulate_population_attrition(current_tribe_location, population_grid, updat
                             if population_grid[y][x][2] < 0:
                                 population_grid[y][x][2] = 0 
                         population_grid[y][x][1] = 0
+                        if over > 0:
+                            population_grid[y][x][3] -= over
                     elif population_grid[y][x][1] < 1:
                         expel[2] += over
                         population_grid[y][x][2] -= over
                     population_grid[selected_tile[1]][selected_tile[0]][1] += expel[1]     # Emigration
                     population_grid[selected_tile[1]][selected_tile[0]][2] += expel[2]     # Emigration
-                
                 if population_grid[y][x][0] > updated_population_caps[y][x]:
                     if terrain_grid[y][x] == 2:
                         population_grid[y][x][1] = pop_cap
@@ -258,7 +264,7 @@ def simulate_population_attrition(current_tribe_location, population_grid, updat
                     terrain_grid[y][x] = 6
             if terrain_grid[y][x] == 2 and population_grid[y][x][1] > 19:
                 settlement_decision = np.random.randint(0, 20)
-                if settlement_decision > 17:
+                if settlement_decision > 14:
                     population_grid[y][x][2] += population_grid[y][x][1]
                     population_grid[y][x][1] -= population_grid[y][x][1]
             if terrain_grid[y][x] == 6 and population_grid[y][x][2] > 35:
@@ -273,7 +279,10 @@ def simulate_population_attrition(current_tribe_location, population_grid, updat
                     population_grid[y][x][1] = 5
                 else:
                     population_grid[y][x][2] = 5
-
+    if population_grid[y][x][3] < 0:
+        population_grid[y][x][3] == 0
+    if population_grid[y][x][2] < 0:
+        population_grid[y][x][2] == 0
     towns_to_remove = []
 
     for i, (town_name, town_position) in enumerate(zip(town_names, town_positions)):

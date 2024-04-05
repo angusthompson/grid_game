@@ -17,6 +17,15 @@ UI_POSITION = (WINDOW_WIDTH - UI_WIDTH, 0)
 BUTTON_WIDTH = 50  # Narrower buttons
 BUTTON_HEIGHT = 50
 BUTTON_MARGIN = 10
+x_size = 53
+y_size = 33
+cell_size = 24
+cell_width = (WINDOW_WIDTH - UI_WIDTH) // x_size
+cell_height = WINDOW_HEIGHT // y_size
+GRID_WIDTH = cell_width*x_size
+GRID_HEIGHT = cell_height*y_size
+
+
 
 
 # Function to draw buttons

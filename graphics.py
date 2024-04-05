@@ -14,6 +14,7 @@ DARK_ORANGE = (255, 140, 0)
 DARK_GREEN = (0, 100, 0)
 DARK_GREY = ((64, 128, 128))
 RED = (255, 80, 80)
+TRANSLUCENT_RED = (255, 0, 0, 64)  # Semi-transparent red (alpha = 128)
 
 # Define constants
 # GRID_SIZE = 60
@@ -25,7 +26,7 @@ BUTTON_TEXT_COLOR = (0, 0, 0)
 BUTTON_TEXT_HOVER_COLOR = (255, 255, 255)
 # Assuming these constants are defined in your code
 PURPLE = (128, 0, 128)
-TILE_SIZE = 12  # Adjust this value as per your tile size
+TILE_SIZE = 12  # Adjust this value as per your tile size, make sure to also adjust in 'ui' module.
 
 
 # Function to draw terrain
@@ -88,3 +89,26 @@ def draw_tribe_location(current_tribe_location, cell_size):
     tile_y = y * cell_size
     # Draw a purple border around the tile
     pygame.draw.rect(game_display, PURPLE, (tile_x, tile_y, cell_size, cell_size), 1)
+
+from ui import GRID_WIDTH, GRID_HEIGHT, cell_size
+
+def borders(terrain_grid, population_grid):
+    # Create a surface for the translucent overlay
+    translucent_surface = pygame.Surface((GRID_WIDTH, GRID_HEIGHT), pygame.SRCALPHA)
+
+    # Iterate through the terrain grid
+    for y in range(len(terrain_grid)):
+        for x in range(len(terrain_grid[y])):
+            if terrain_grid[y][x] == 5:
+                # Cover tiles within two tiles of terrain_grid[y][x] == 5 with translucent color
+                for dy in range(-2, 3):
+                    for dx in range(-2, 3):
+                        new_y = y + dy
+                        new_x = x + dx
+                        if 0 <= new_y < len(terrain_grid) and 0 <= new_x < len(terrain_grid[0]) and terrain_grid[new_y][new_x] != 1:
+                            # Modify the alpha value of the color to make it translucent
+                            color = TRANSLUCENT_RED[:3] + (100,)  # Adjust the alpha value as needed
+                            pygame.draw.rect(translucent_surface, color, (new_x * cell_size, new_y * cell_size, cell_size, cell_size))
+        
+    # Blit the translucent surface onto the screen without any offset
+    game_display.blit(translucent_surface, (0, 0))
