@@ -9,6 +9,7 @@ from terrain_generation import generate_terrain_grid
 from graphics import draw_terrain, determine_terrain_color, draw_terrain_and_population, draw_road_overlay, draw_tribe_location, borders
 from primitive_movement import move_population_up, move_population_down, move_population_left, move_population_right, find_starting_location, convert_to_farmers
 from controls import move_down, move_left, move_right, move_up, advance, convert_to_farmers_button
+from economy import identify_towns
 
 # Initialize Pygame
 pygame.init()
@@ -34,6 +35,7 @@ def main():
     #Stage and turn
     turn_counter = 0
     stage = 0
+    commodities = 0
     town_positions = []
     town_names = []
     initial_population_caps_grid = initial_population_caps(terrain_grid)
@@ -169,7 +171,7 @@ def main():
 
 
         if overlay_visible:
-            borders(terrain_grid, population_grid)
+            borders(terrain_grid, population_grid, town_positions, cell_size, game_display)
 
         # Update the display
         pygame.display.flip()

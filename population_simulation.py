@@ -1,5 +1,6 @@
 import numpy as np
 from terrain_generation import get_neighbors, get_population_neighbors, get_name
+from economy import find_towns
 import random
 import math
 
@@ -269,9 +270,10 @@ def simulate_population_attrition(current_tribe_location, population_grid, updat
                     population_grid[y][x][1] -= population_grid[y][x][1]
             if terrain_grid[y][x] == 6 and population_grid[y][x][2] > 35:
                 terrain_grid[y][x] = 5
-                name, position = get_name(y, x)
-                town_names.append(name)
-                town_positions.append(position)
+                # name, position = get_name(y, x)
+                # town_names.append(name)
+                # town_positions.append(position)
+                find_towns(population_grid, terrain_grid, town_names, town_positions)
             # if terrain_grid[y][x] == 5 and population_grid[y][x][0] < 20:
             #     terrain_grid[y][x] = 6
             if terrain_grid[y][x] == 1 and population_grid[y][x][0] > 5:
