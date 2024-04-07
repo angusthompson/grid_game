@@ -30,6 +30,7 @@ def update_towns_with_territory_population(population_grid, towns, town_position
 
         towns[i]["territory_population"] = total_population
 
+
 def display_towns(screen, font, towns):
     font_size = 16  # Font size for town names
 

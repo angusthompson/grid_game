@@ -155,6 +155,30 @@ def borders(terrain_grid, population_grid, town_positions, cell_size, game_displ
     # Blit the translucent surface onto the screen without any offset
     game_display.blit(translucent_surface, (0, 0))
 
+# def borders(terrain_grid, population_grid, town_positions, cell_size, game_display, towns, territories):
+#     # Create a surface for the translucent overlay
+#     translucent_surface = pygame.Surface((GRID_WIDTH, GRID_HEIGHT), pygame.SRCALPHA)
+
+#     # Iterate through each tile in the grid
+#     for y in range(len(terrain_grid)):
+#         for x in range(len(terrain_grid[0])):
+#             # Check if the tile is not water
+#             if terrain_grid[y][x] != 1:
+#                 # Check the ownership of the tile based on the territories grid
+#                 owner_index = territories[y][x]
+#                 if owner_index != 0:
+#                     # Get the color of the town for the translucent overlay
+#                     town = towns[owner_index]  # Subtract 1 to convert from index to list position
+#                     border_color = town["color"]
+#                     border_color_with_alpha = border_color + (150,)  # Add alpha channel for transparency
+
+#                     # Draw a translucent rectangle on the surface for the current tile
+#                     pygame.draw.rect(translucent_surface, border_color_with_alpha, (x * cell_size, y * cell_size, cell_size, cell_size))
+
+#     # Blit the translucent surface onto the screen without any offset
+#     game_display.blit(translucent_surface, (0, 0))
+
+
 
 def get_random_color(existing_colors):
     while True:

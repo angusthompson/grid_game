@@ -50,6 +50,8 @@ def main():
     GRID_WIDTH = cell_width*x_size
     GRID_HEIGHT = cell_height*y_size
 
+    territories = [[0 for _ in range(GRID_WIDTH)] for _ in range(GRID_HEIGHT)]
+
     button_labels = ['^', 'v', '<-', '->','S','-','-','-','B','SD','SL','SR','-','-','-','-']
 
     current_tribe_location = (0, 0)
@@ -159,6 +161,7 @@ def main():
 
         # Display towns
         # calculate_city_territories(population_grid, town_positions)
+        city_territories = calculate_city_territories(population_grid, town_positions)
         update_towns_with_territory_population(population_grid, towns, town_positions)
         display_towns(game_display, pygame.font.Font(None, 20), towns)
         for town_name, town_position in zip(town_names, town_positions):
