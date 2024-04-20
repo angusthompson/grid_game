@@ -1,13 +1,13 @@
 import numpy as np
 from terrain_generation import get_neighbors, get_population_neighbors, get_name
-# from economy import find_towns
+from economy import find_towns
 import random
 import math
-from graphics import get_random_color
 
 def generate_population_grid(size_y, size_x, terrain_grid):
     # population_grid = np.zeros((size_y, size_x))
     population_grid = np.zeros((size_y, size_x, 8), dtype=int)
+    territories = np.zeros((size_y, size_x), dtype=int)
 
     initial_population_caps = np.zeros((size_y, size_x))
 
@@ -32,9 +32,9 @@ def generate_population_grid(size_y, size_x, terrain_grid):
         for x in range(size_x):
             population_grid[y][x][0] = sum(population_grid[y][x][1:])
 
-    town_names = []
-    town_positions = []
-    return population_grid, initial_population_caps, town_names, town_positions
+    towns = []
+    states = []
+    return population_grid, initial_population_caps, towns, states, territories
 
 
 def initial_population_caps(terrain_grid):
@@ -44,12 +44,6 @@ def initial_population_caps(terrain_grid):
             if terrain_grid[y][x] == 2:  # Field tile
                 population_caps[y][x] = np.random.randint(10, 21)
     return population_caps
-
-
-
-
-
-
 
 
 def update_population_caps(initial_population_caps, terrain_grid, population_grid):
@@ -141,7 +135,7 @@ def simulate_population_growth(current_tribe_location, population_grid, updated_
     return population_grid, terrain_grid
 
 
-def simulate_population_attrition(current_tribe_location, population_grid, updated_population_caps, terrain_grid, town_names, town_positions, towns):
+def simulate_population_attrition(current_tribe_location, population_grid, updated_population_caps, terrain_grid, towns, states, territories):
     size_y, size_x, _ = population_grid.shape
     currentx, currenty = current_tribe_location
 
@@ -269,17 +263,11 @@ def simulate_population_attrition(current_tribe_location, population_grid, updat
                 if settlement_decision > 14:
                     population_grid[y][x][2] += population_grid[y][x][1]
                     population_grid[y][x][1] -= population_grid[y][x][1]
-            if terrain_grid[y][x] == 6 and population_grid[y][x][2] > 35:
+            if terrain_grid[y][x] == 6 and population_grid[y][x][2] > 30:
                 terrain_grid[y][x] = 5
                 name, position = get_name(y, x)
-
-                colour = get_random_color([town["color"] for town in towns])
-                
-                towns.append({"name": name, "position": position, "color": colour})
-
-                town_names.append(name)
-                town_positions.append(position)
-                # find_towns(population_grid, terrain_grid, town_names, town_positions)
+                towns.append({"name": name, "position_x": x, "position_y": y, "state": 0})
+                find_towns(population_grid, terrain_grid, towns, states, territories)
             # if terrain_grid[y][x] == 5 and population_grid[y][x][0] < 20:
             #     terrain_grid[y][x] = 6
             if terrain_grid[y][x] == 1 and population_grid[y][x][0] > 5:
@@ -291,19 +279,25 @@ def simulate_population_attrition(current_tribe_location, population_grid, updat
         population_grid[y][x][3] == 0
     if population_grid[y][x][2] < 0:
         population_grid[y][x][2] == 0
+
     towns_to_remove = []
 
-    for i, (town_name, town_position) in enumerate(zip(town_names, town_positions)):
-        x, y = town_position
+    # Find towns to remove
+    for i, town in enumerate(towns):
+        x = town['position_x']
+        y = town['position_y']
         if terrain_grid[y][x] == 5 and population_grid[y][x][0] < 20:
             towns_to_remove.append(i)
             terrain_grid[y][x] = 6
 
-    # Remove towns that need to be removed
+    # Remove towns from towns dictionary
     for index in sorted(towns_to_remove, reverse=True):
-        del town_names[index]
-        del town_positions[index]
         del towns[index]
+
+    # Remove corresponding towns from states dictionary
+    for state in states:
+        state['towns'] = [town_name for town_name in state['towns'] if town_name not in [town['name'] for town in towns]]
+
     
     if population_grid[currenty][currentx][0] < 3:
         population_grid[currenty][currentx][1] = 3
@@ -313,7 +307,7 @@ def simulate_population_attrition(current_tribe_location, population_grid, updat
     population_grid[y][x][0] = sum(population_grid[y][x][1:])
 
 
-    return population_grid, terrain_grid, town_names, town_positions, towns
+    return population_grid, terrain_grid, towns, states, territories
 
 
 

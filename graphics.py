@@ -94,97 +94,46 @@ def draw_tribe_location(current_tribe_location, cell_size):
 
 from ui import GRID_WIDTH, GRID_HEIGHT, cell_size
 
-# def borders(terrain_grid, population_grid, town_positions, cell_size, game_display):
-#     # Create a surface for the translucent overlay
-#     translucent_surface = pygame.Surface((GRID_WIDTH, GRID_HEIGHT), pygame.SRCALPHA)
-
-#     # Create a dictionary to store town borders
-#     town_borders = {}
-
-#     # Iterate through town positions
-#     for town_position in town_positions:
-#         # Get town position coordinates
-#         town_x, town_y = town_position
-
-#         # Check if the town is already assigned a border color
-#         if town_position not in town_borders:
-#             # Generate a random translucent color for the border
-#             border_color = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255), 100)
-
-#             # Cover tiles within two tiles of the town with the border color
-#             for dy in range(-2, 3):
-#                 for dx in range(-2, 3):
-#                     new_y = town_y + dy
-#                     new_x = town_x + dx
-#                     if 0 <= new_y < len(terrain_grid) and 0 <= new_x < len(terrain_grid[0]) and terrain_grid[new_y][new_x] != 1:
-#                         # Modify the alpha value of the color to make it translucent
-#                         pygame.draw.rect(translucent_surface, border_color, (new_x * cell_size, new_y * cell_size, cell_size, cell_size))
-
-#             # Store the border color for the town
-#             town_borders[town_position] = border_color
-
-#     # Blit the translucent surface onto the screen without any offset
-#     game_display.blit(translucent_surface, (0, 0))
-
-#     # Return the updated town borders dictionary
-#     return town_borders
-
-
-def borders(terrain_grid, population_grid, town_positions, cell_size, game_display, towns):
+def borders(terrain_grid, population_grid, town_positions, cell_size, game_display):
     # Create a surface for the translucent overlay
     translucent_surface = pygame.Surface((GRID_WIDTH, GRID_HEIGHT), pygame.SRCALPHA)
 
-    # Iterate through town positions to determine ownership of each tile
-    for y in range(len(terrain_grid)):
-        for x in range(len(terrain_grid[0])):
-            # Check if the tile is not water
-            if terrain_grid[y][x] != 1:
-                # Check which town claims ownership over the tile
-                for town_position in town_positions:
-                    town_x, town_y = town_position
-                    if abs(town_x - x) <= 2 and abs(town_y - y) <= 2:
-                        # Get the color of the town for the translucent overlay
-                        for town in towns:
-                            if town["position"] == town_position:
-                                border_color = town["color"]
-                                border_color_with_alpha = border_color + (150,)  # Add alpha channel for transparency
+    # Create a dictionary to store town borders
+    town_borders = {}
 
-                                # Draw a translucent rectangle on the surface for the current tile
-                                pygame.draw.rect(translucent_surface, border_color_with_alpha, (x * cell_size, y * cell_size, cell_size, cell_size))
+    # Iterate through town positions
+    for town_position in town_positions:
+        # Get town position coordinates
+        town_x, town_y = town_position
+
+        # Check if the town is already assigned a border color
+        if town_position not in town_borders:
+            # Generate a random translucent color for the border
+            border_color = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255), 100)
+
+            # Cover tiles within two tiles of the town with the border color
+            for dy in range(-2, 3):
+                for dx in range(-2, 3):
+                    new_y = town_y + dy
+                    new_x = town_x + dx
+                    if 0 <= new_y < len(terrain_grid) and 0 <= new_x < len(terrain_grid[0]) and terrain_grid[new_y][new_x] != 1:
+                        # Modify the alpha value of the color to make it translucent
+                        pygame.draw.rect(translucent_surface, border_color, (new_x * cell_size, new_y * cell_size, cell_size, cell_size))
+
+            # Store the border color for the town
+            town_borders[town_position] = border_color
 
     # Blit the translucent surface onto the screen without any offset
     game_display.blit(translucent_surface, (0, 0))
 
-# def borders(terrain_grid, population_grid, town_positions, cell_size, game_display, towns, territories):
-#     # Create a surface for the translucent overlay
-#     translucent_surface = pygame.Surface((GRID_WIDTH, GRID_HEIGHT), pygame.SRCALPHA)
-
-#     # Iterate through each tile in the grid
-#     for y in range(len(terrain_grid)):
-#         for x in range(len(terrain_grid[0])):
-#             # Check if the tile is not water
-#             if terrain_grid[y][x] != 1:
-#                 # Check the ownership of the tile based on the territories grid
-#                 owner_index = territories[y][x]
-#                 if owner_index != 0:
-#                     # Get the color of the town for the translucent overlay
-#                     town = towns[owner_index]  # Subtract 1 to convert from index to list position
-#                     border_color = town["color"]
-#                     border_color_with_alpha = border_color + (150,)  # Add alpha channel for transparency
-
-#                     # Draw a translucent rectangle on the surface for the current tile
-#                     pygame.draw.rect(translucent_surface, border_color_with_alpha, (x * cell_size, y * cell_size, cell_size, cell_size))
-
-#     # Blit the translucent surface onto the screen without any offset
-#     game_display.blit(translucent_surface, (0, 0))
-
-
+    # Return the updated town borders dictionary
+    return town_borders
 
 def get_random_color(existing_colors):
     while True:
         # Generate a random color
         color = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
-        
+        print(color)
         # Check similarity with existing colors
         similar_color = False
         for existing_color in existing_colors:
