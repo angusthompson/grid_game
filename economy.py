@@ -1,12 +1,11 @@
 from terrain_generation import get_name
 from graphics import get_random_color
-from ui import UI_POSITION, UI_HEIGHT
 import pygame
 
 x_size = 53
 y_size = 33
 
-def generate_state(i, town, x, y, states, territories):
+def generate_state(i, town, x, y, states, territories, terrain_grid):
     single_name = town["name"]
     # print("Adding ", single_name, " to new state")
     colour = get_random_color([state["colour"] for state in states])
@@ -17,11 +16,11 @@ def generate_state(i, town, x, y, states, territories):
         for dx in range(-2, 3):
             nx, ny = x + dx, y + dy
             if nx < x_size and ny < y_size:
-                if territories[ny][nx] == 0:
+                if territories[ny][nx] == 0 and terrain_grid[ny][nx] != 1:
                     territories[ny][nx] = len(states)
     return states, territories
 
-def add_to_state(i, n, town, x, y, states, territories):
+def add_to_state(i, n, town, x, y, states, territories, terrain_grid):
     name = town["name"]
     # print("n in add to state: ", n)
     state = states[n-1]
@@ -35,11 +34,11 @@ def add_to_state(i, n, town, x, y, states, territories):
             for dx in range(-2, 3):
                 nx, ny = x + dx, y + dy
                 if nx < x_size and ny < y_size:
-                    if territories[ny][nx] == 0:
+                    if territories[ny][nx] == 0 and terrain_grid[ny][nx] != 1:
                         territories[ny][nx] = n
     states
 
-def find_towns(population_grid, terrain_grid, towns, states, territories):
+def find_towns(population_grid, towns, states, territories, terrain_grid):
     # print(towns)
     z = 0
     for i in towns:
@@ -48,10 +47,10 @@ def find_towns(population_grid, terrain_grid, towns, states, territories):
         x = town['position_x']
         y = town['position_y']
         if territories[y][x] == 0:
-            generate_state(z, town, x, y, states, territories)
+            generate_state(z, town, x, y, states, territories, terrain_grid)
         else:
             n = territories[y][x]
-            add_to_state(z, n, town, x, y, states, territories)
+            add_to_state(z, n, town, x, y, states, territories, terrain_grid)
         z += 1
     return towns
 
@@ -108,25 +107,26 @@ def draw_territory_borders(territories, states, territory_colors, game_display, 
                 if neighbor_territory != current_territory:
                     pygame.draw.line(game_display, current_state_color, ((x + 1) * cell_size, y * cell_size), ((x + 1) * cell_size, (y + 1) * cell_size), 2)
 
-def display_towns(screen, font, states):
-    font_size = 16  # Font size for town names
 
-    # Iterate over towns
-    for i, state in enumerate(states):
-        name = state["name"]
-        color = state["colour"]
-        # population = state["territory_population"]  # New population information
+def count_population_by_state(territories, population_grid, states):
+    # Initialize counts for each state
+    state_populations = {state["name"]: [0, 0, 0, 0] for state in states}
 
-        # Render town name on a background of the town's color
-        name_surface = font.render(name+'ia', True, (255, 255, 255))  # White text color
-        text_rect = name_surface.get_rect()
-        text_rect.topleft = (UI_POSITION[0] + 10, UI_HEIGHT - 300 + (i) * font_size)
-        pygame.draw.rect(screen, color, text_rect)  # Draw background of town color
-        screen.blit(name_surface, text_rect.topleft)
+    # Iterate over territories
+    for y in range(len(territories)):
+        for x in range(len(territories[y])):
+            territory_owner = territories[y][x]
+            if territory_owner > 0:
+                state_index = territory_owner - 1
+                state_name = states[state_index]["name"]
+                # Update population counts for the corresponding state
+                state_populations[state_name][0] += population_grid[y][x][0]  # Count of pop 1
+                state_populations[state_name][1] += population_grid[y][x][1]  # Count of pop 2
+                state_populations[state_name][2] += population_grid[y][x][2]  # Count of pop 3
+                state_populations[state_name][3] += population_grid[y][x][3]  # Count of pop 4
 
-        # # Render population information
-        # population_surface = font.render(f"Population: {population}", True, (255, 255, 255))  # White text color
-        # population_rect = population_surface.get_rect()
-        # population_rect.topleft = (UI_POSITION[0] + 10, UI_HEIGHT - 285 + (i) * font_size * 3)  # Adjust y position
-        # screen.blit(population_surface, population_rect.topleft)
-
+    # Append population counts to the states list
+    for state in states:
+        state_name = state["name"]
+        state["population_counts"] = state_populations[state_name]
+        state["commodities"] = 0

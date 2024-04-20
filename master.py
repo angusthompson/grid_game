@@ -3,13 +3,13 @@ from pygame.locals import *
 import sys
 import numpy as np
 import random
-from ui import draw_button, is_hover, WHITE, BLACK, GRAY, LIGHT_GRAY, DARK_GRAY, GREEN, WINDOW_WIDTH, WINDOW_HEIGHT, UI_WIDTH, UI_HEIGHT, UI_POSITION, BUTTON_WIDTH, BUTTON_HEIGHT, BUTTON_MARGIN, display_population_info, counters
+from ui import draw_button, is_hover, WHITE, BLACK, GRAY, LIGHT_GRAY, DARK_GRAY, GREEN, WINDOW_WIDTH, WINDOW_HEIGHT, UI_WIDTH, UI_HEIGHT, UI_POSITION, BUTTON_WIDTH, BUTTON_HEIGHT, BUTTON_MARGIN, display_population_info, counters, draw_economy_overlay
 from population_simulation import generate_population_grid, initial_population_caps, update_population_caps, simulate_population_growth, generate_road_grid
 from terrain_generation import generate_terrain_grid
 from graphics import draw_terrain, determine_terrain_color, draw_terrain_and_population, draw_road_overlay, draw_tribe_location, borders
 from primitive_movement import move_population_up, move_population_down, move_population_left, move_population_right, find_starting_location, convert_to_farmers
 from controls import move_down, move_left, move_right, move_up, advance, convert_to_farmers_button
-from economy import borders, display_towns, draw_territory_borders
+from economy import borders, draw_territory_borders, count_population_by_state
 # from economy import identify_towns
 
 # Initialize Pygame
@@ -22,7 +22,7 @@ pygame.display.set_caption('Grid Game!                                          
 
 border_overlay_visible = False
 names_overlay_visible = False
-
+economy_overlay_visible = False
 
 # Main game loop
 def main():
@@ -42,6 +42,7 @@ def main():
     initial_population_caps_grid = initial_population_caps(terrain_grid)
     global border_overlay_visible
     global names_overlay_visible
+    global economy_overlay_visible
 
     # Calculate cell sizes based on the dimensions of the window and terrain grid
     cell_width = (WINDOW_WIDTH - UI_WIDTH) // x_size
@@ -51,7 +52,7 @@ def main():
     GRID_WIDTH = cell_width*x_size
     GRID_HEIGHT = cell_height*y_size
 
-    button_labels = ['^', 'v', '<-', '->','S','-','-','-','Borders','Towns','SL','SR','-','-','-','-']
+    button_labels = ['^', 'v', '<-', '->','S','-','-','-','Borders','Towns','Economies','SR','-','-','-','-']
 
     current_tribe_location = (0, 0)
     current_tribe_location = find_starting_location(population_grid)
@@ -81,6 +82,7 @@ def main():
         button_5_rect = pygame.Rect(UI_POSITION[0] + 10, UI_POSITION[1] + 10 + (BUTTON_HEIGHT + BUTTON_MARGIN) * 4, BUTTON_WIDTH, BUTTON_HEIGHT)
         button_10_rect = pygame.Rect(UI_POSITION[0] + 10 + (BUTTON_HEIGHT + BUTTON_MARGIN), UI_POSITION[1] + 10, BUTTON_WIDTH*2, BUTTON_HEIGHT)
         button_11_rect = pygame.Rect(UI_POSITION[0] + 10 + (BUTTON_HEIGHT + BUTTON_MARGIN), UI_POSITION[1] + 10 + (BUTTON_HEIGHT + BUTTON_MARGIN), BUTTON_WIDTH*2, BUTTON_HEIGHT)
+        button_12_rect = pygame.Rect(UI_POSITION[0] + 10 + (BUTTON_HEIGHT + BUTTON_MARGIN), UI_POSITION[1] + 10 + (BUTTON_HEIGHT + BUTTON_MARGIN) * 2, BUTTON_WIDTH*2, BUTTON_HEIGHT)
 
         mouse_x, mouse_y = pygame.mouse.get_pos()
 
@@ -113,6 +115,8 @@ def main():
                     border_overlay_visible = not border_overlay_visible
                 elif is_hover(pygame.mouse.get_pos(), button_11_rect):
                     names_overlay_visible = not names_overlay_visible
+                elif is_hover(pygame.mouse.get_pos(), button_12_rect):
+                    economy_overlay_visible = not economy_overlay_visible
             elif event.type == pygame.KEYDOWN:
                 # Check for keyboard input
                 if event.key == pygame.K_UP:
@@ -170,8 +174,8 @@ def main():
 
         territory_colors = borders(territories, states)
         draw_territory_borders(territories, states, territory_colors, game_display, cell_size)
-
-        display_towns(game_display, pygame.font.Font(None, 20), states)
+        count_population_by_state(territories, population_grid, states)
+        # display_towns(game_display, pygame.font.Font(None, 20), states)
 
         if names_overlay_visible:
             for town_info in towns:
@@ -205,6 +209,8 @@ def main():
             if 0 <= tile_x < x_size and 0 <= tile_y < y_size:
                 display_population_info(game_display, population_grid[tile_y][tile_x], population_caps_grid, mouse_x, mouse_y, tile_x, tile_y)
 
+        if economy_overlay_visible:
+            draw_economy_overlay(game_display, states)
 
         # Update the display
         pygame.display.flip()

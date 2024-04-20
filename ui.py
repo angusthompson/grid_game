@@ -134,3 +134,87 @@ def counters(terrain_grid, surface, turn_counter, stage):
         stage_text = f"Stage: {stage_name}"
         stage_surface = font.render(stage_text, True, (0, 0, 0))
         surface.blit(stage_surface, (UI_POSITION[0] + 10, UI_HEIGHT - 80))
+
+import pygame
+
+def draw_economy_overlay(screen, states):
+    # Get the dimensions of the game display
+    display_width, display_height = screen.get_size()
+
+    # Define the dimensions of the overlay rectangle
+    overlay_width = display_width - 200  # Reduce width by 20 pixels
+    overlay_height = display_height - 30  # Reduce height by 20 pixels
+
+    # Calculate the position of the overlay rectangle to center it on the screen
+    overlay_x = ((display_width - overlay_width) // 2) - 90
+    overlay_y = (display_height - overlay_height) // 2
+
+    # Define colors
+    grey = (192, 192, 192)
+    black = (0, 0, 0)
+
+    # Draw the grey rectangle
+    pygame.draw.rect(screen, grey, (overlay_x, overlay_y, overlay_width, overlay_height))
+
+    # Draw the black border
+    pygame.draw.rect(screen, black, (overlay_x, overlay_y, overlay_width, overlay_height), 3)
+
+    display_towns(screen, pygame.font.Font(None, 20), states, overlay_width, overlay_height, overlay_x, overlay_y)
+
+
+def commodities(states):
+    for state in states:
+        populations = state["population_counts"]
+        commodities = state["commodities"]
+        farmer_population = populations[2]
+        merchant_population = populations[3]
+        commodities += merchant_population * 0.3
+        commodities -= farmer_population * 0.1
+        state["commodities"] = round(commodities, 1)
+
+
+def display_towns(screen, font, states, overlay_width, overlay_height, overlay_x, overlay_y):
+    font_size = 16  # Font size for state names
+    commodities(states)
+
+    # Iterate over states
+    for i, state in enumerate(states):
+        name = state["name"]
+        color = state["colour"]
+        populations = state["population_counts"]
+        state_commodities = state["commodities"]
+        total_population = populations[0]  # Get total population from the state dictionary
+        merchant_population = populations[3]
+
+        # Render state name, total population, merchant population, and state commodities on separate lines
+        name_surface = font.render(name, True, (255, 255, 255))  # White text color
+        total_pop_surface = font.render(f"Total Population: {total_population}", True, (255, 255, 255))
+        merchant_pop_surface = font.render(f"Merchant Population: {merchant_population}", True, (255, 255, 255))
+        commodities_surface = font.render(f"Commodities: {i}", True, (255, 255, 255))
+
+        # Calculate vertical position for each line
+        name_rect = name_surface.get_rect()
+        total_pop_rect = total_pop_surface.get_rect()
+        merchant_pop_rect = merchant_pop_surface.get_rect()
+        commodities_rect = commodities_surface.get_rect()
+        if i < 11:
+            name_rect.topleft = (100, UI_HEIGHT - 700 + (i) * font_size * 4)
+            total_pop_rect.topleft = (100, UI_HEIGHT - 700 + 15 + (i) * font_size * 4)
+            merchant_pop_rect.topleft = (100, UI_HEIGHT - 700 + 30 + (i) * font_size * 4)
+            commodities_rect.topleft = (100, UI_HEIGHT - 700 + 45 + (i) * font_size * 4)
+        if i > 11:
+            name_rect.topleft = (200, UI_HEIGHT - 700 + (i - 10) * font_size * 4)
+            total_pop_rect.topleft = (200, UI_HEIGHT - 700 + 15 + (i - 10) * font_size * 4)
+            merchant_pop_rect.topleft = (200, UI_HEIGHT - 700 + 30 + (i - 10) * font_size * 4)
+            commodities_rect.topleft = (200, UI_HEIGHT - 700 + 45 + (i - 10) * font_size * 4)
+        # Draw background of state color for each line
+        pygame.draw.rect(screen, color, name_rect)
+        pygame.draw.rect(screen, color, total_pop_rect)
+        pygame.draw.rect(screen, color, merchant_pop_rect)
+        pygame.draw.rect(screen, color, commodities_rect)
+
+        # Blit text onto the overlay
+        screen.blit(name_surface, name_rect.topleft)
+        screen.blit(total_pop_surface, total_pop_rect.topleft)
+        screen.blit(merchant_pop_surface, merchant_pop_rect.topleft)
+        screen.blit(commodities_surface, commodities_rect.topleft)

@@ -133,7 +133,6 @@ def get_random_color(existing_colors):
     while True:
         # Generate a random color
         color = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
-        print(color)
         # Check similarity with existing colors
         similar_color = False
         for existing_color in existing_colors:

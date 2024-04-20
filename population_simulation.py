@@ -267,7 +267,7 @@ def simulate_population_attrition(current_tribe_location, population_grid, updat
                 terrain_grid[y][x] = 5
                 name, position = get_name(y, x)
                 towns.append({"name": name, "position_x": x, "position_y": y, "state": 0})
-                find_towns(population_grid, terrain_grid, towns, states, territories)
+                find_towns(population_grid, towns, states, territories, terrain_grid)
             # if terrain_grid[y][x] == 5 and population_grid[y][x][0] < 20:
             #     terrain_grid[y][x] = 6
             if terrain_grid[y][x] == 1 and population_grid[y][x][0] > 5:
