@@ -2,6 +2,7 @@ from population_simulation import generate_population_grid, initial_population_c
 from terrain_generation import generate_terrain_grid
 from graphics import draw_terrain, determine_terrain_color, draw_terrain_and_population, draw_road_overlay, draw_tribe_location
 from primitive_movement import move_population_up, move_population_down, move_population_left, move_population_right, find_starting_location, convert_to_farmers
+from economy import commodities
 
 def move_up(population_grid, terrain_grid, current_tribe_location, population_caps_grid, initial_population_caps_grid, turn_counter, towns, states, territories):
     # Simulate the 'Up' button click
@@ -19,7 +20,6 @@ def move_left(population_grid, terrain_grid, current_tribe_location, population_
     # Simulate the 'Left' button click
     population_grid, current_tribe_location = move_population_left(population_grid, terrain_grid, current_tribe_location)
     population_grid, terrain_grid, current_tribe_location, population_caps_grid, road_grid, turn_counter, towns, states, territories= advance(population_grid, terrain_grid, current_tribe_location, population_caps_grid, initial_population_caps_grid, turn_counter, towns, states, territories)
-
     return population_grid, terrain_grid, current_tribe_location, population_caps_grid, road_grid, turn_counter, towns, states, territories
 
 def move_right(population_grid, terrain_grid, current_tribe_location, population_caps_grid, initial_population_caps_grid, turn_counter, towns, states, territories):
@@ -35,6 +35,7 @@ def advance(population_grid, terrain_grid, current_tribe_location, population_ca
     population_caps_grid = update_population_caps(initial_population_caps_grid, terrain_grid, population_grid)
     road_grid = generate_road_grid(population_grid, terrain_grid, population_grid, current_tribe_location)
     turn_counter += 1
+    commodities(states)
     return population_grid, terrain_grid, current_tribe_location, population_caps_grid, road_grid, turn_counter, towns, states, territories
 
 def convert_to_farmers_button(population_grid, terrain_grid, current_tribe_location, population_caps_grid, initial_population_caps_grid, turn_counter, stage, towns, states, territories):

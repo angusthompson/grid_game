@@ -3,14 +3,14 @@ from pygame.locals import *
 import sys
 import numpy as np
 import random
-from ui import draw_button, is_hover, WHITE, BLACK, GRAY, LIGHT_GRAY, DARK_GRAY, GREEN, WINDOW_WIDTH, WINDOW_HEIGHT, UI_WIDTH, UI_HEIGHT, UI_POSITION, BUTTON_WIDTH, BUTTON_HEIGHT, BUTTON_MARGIN, display_population_info, counters, draw_economy_overlay
+from ui import draw_button, is_hover, display_population_info, counters
 from population_simulation import generate_population_grid, initial_population_caps, update_population_caps, simulate_population_growth, generate_road_grid
 from terrain_generation import generate_terrain_grid
 from graphics import draw_terrain, determine_terrain_color, draw_terrain_and_population, draw_road_overlay, draw_tribe_location, borders
 from primitive_movement import move_population_up, move_population_down, move_population_left, move_population_right, find_starting_location, convert_to_farmers
 from controls import move_down, move_left, move_right, move_up, advance, convert_to_farmers_button
-from economy import borders, draw_territory_borders, count_population_by_state
-# from economy import identify_towns
+from economy import borders, draw_territory_borders, count_population_by_state, draw_economy_overlay
+from parameters import cell_height, cell_size, cell_width, x_size, y_size, WHITE, BLACK, GRAY, LIGHT_GRAY, DARK_GRAY, GREEN, UI_WIDTH, WINDOW_WIDTH, WINDOW_HEIGHT, UI_HEIGHT, UI_POSITION, BUTTON_HEIGHT, BUTTON_WIDTH, BUTTON_MARGIN, GRID_WIDTH, GRID_HEIGHT
 
 # Initialize Pygame
 pygame.init()
@@ -28,9 +28,9 @@ economy_overlay_visible = False
 def main():
     # Generate terrain grid
     # Define the size of the x and y axes separately
-    x_size = 53
-    y_size = 33
-    cell_size = 24
+    # x_size = 53
+    # y_size = 33
+    # cell_size = 24
     # Generate terrain grid
     terrain_grid = generate_terrain_grid(size_x=x_size, size_y=y_size, num_iterations=5)
     population_grid, initial_caps, towns, states, territories = generate_population_grid(size_y=y_size, size_x=x_size, terrain_grid=terrain_grid)
@@ -150,7 +150,7 @@ def main():
 
         # Draw 'Advance' button
         draw_button(game_display, 'Advance', (UI_POSITION[0] + 10, UI_HEIGHT - BUTTON_HEIGHT - 10), (BUTTON_WIDTH * 3.2, BUTTON_HEIGHT), is_hover(mouse_pos, pygame.Rect(UI_POSITION[0] + 10, UI_HEIGHT - BUTTON_HEIGHT - 10, BUTTON_WIDTH * 2 + BUTTON_MARGIN, BUTTON_HEIGHT)))
-        counters(terrain_grid, game_display, turn_counter, stage)
+        counters(terrain_grid, game_display, turn_counter, stage, states)
 
 
         if border_overlay_visible:

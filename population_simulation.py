@@ -1,8 +1,24 @@
 import numpy as np
 from terrain_generation import get_neighbors, get_population_neighbors, get_name
-from economy import find_towns
+from economy import generate_state, add_to_state
 import random
 import math
+
+def find_towns(population_grid, towns, states, territories, terrain_grid):
+    # print(towns)
+    z = 0
+    for i in towns:
+        town = towns[z]
+        # print(town)
+        x = town['position_x']
+        y = town['position_y']
+        if territories[y][x] == 0:
+            generate_state(z, town, x, y, states, territories, terrain_grid)
+        else:
+            n = territories[y][x]
+            add_to_state(z, n, town, x, y, states, territories, terrain_grid)
+        z += 1
+    return towns
 
 def generate_population_grid(size_y, size_x, terrain_grid):
     # population_grid = np.zeros((size_y, size_x))
@@ -265,6 +281,8 @@ def simulate_population_attrition(current_tribe_location, population_grid, updat
                     population_grid[y][x][1] -= population_grid[y][x][1]
             if terrain_grid[y][x] == 6 and population_grid[y][x][2] > 30:
                 terrain_grid[y][x] = 5
+                population_grid[y][x][4] = 1
+                population_grid[y][x][3] -= 1
                 name, position = get_name(y, x)
                 towns.append({"name": name, "position_x": x, "position_y": y, "state": 0})
                 find_towns(population_grid, towns, states, territories, terrain_grid)

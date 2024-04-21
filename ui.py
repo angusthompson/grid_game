@@ -1,32 +1,5 @@
 import pygame
-
-# Define colors
-WHITE = (255, 255, 255)
-BLACK = (0, 0, 0)
-GRAY = (200, 200, 200)
-LIGHT_GRAY = (220, 220, 220)
-DARK_GRAY = (150, 150, 150)
-GREEN = (0, 255, 0)
-
-# Define sizes and positions for UI elements
-UI_WIDTH = 180
-WINDOW_WIDTH = 1450  # Increased width
-WINDOW_HEIGHT = 800
-UI_HEIGHT = WINDOW_HEIGHT
-UI_POSITION = (WINDOW_WIDTH - UI_WIDTH, 0)
-BUTTON_WIDTH = 50  # Narrower buttons
-BUTTON_HEIGHT = 50
-BUTTON_MARGIN = 10
-x_size = 53
-y_size = 33
-cell_size = 24
-cell_width = (WINDOW_WIDTH - UI_WIDTH) // x_size
-cell_height = WINDOW_HEIGHT // y_size
-GRID_WIDTH = cell_width*x_size
-GRID_HEIGHT = cell_height*y_size
-
-
-
+from parameters import WHITE, BLACK, GRAY, LIGHT_GRAY, DARK_GRAY, GREEN, UI_WIDTH, WINDOW_WIDTH, WINDOW_HEIGHT, UI_HEIGHT, UI_POSITION, BUTTON_HEIGHT, BUTTON_MARGIN, x_size, y_size, cell_size, cell_width, cell_height, GRID_WIDTH, GRID_HEIGHT
 
 # Function to draw buttons
 def draw_button(surface, text, position, size, hover):
@@ -91,6 +64,13 @@ def display_population_info(game_display, population, population_caps_grid, x, y
     merchant_rect.topleft = (x + 15, y  + population_rect.height*4 + 25)
     pygame.draw.rect(game_display, (0, 0, 0), merchant_rect)        # Background color for merchants
 
+    # Render noble text
+    noble_text = "Nobles: " + str(population[4])
+    noble_surface = font.render(noble_text, True, (255, 255, 255))
+    # Calculate text rect for nobles
+    noble_rect = noble_surface.get_rect()
+    noble_rect.topleft = (x + 15, y  + population_rect.height*5 + 25)
+    pygame.draw.rect(game_display, (0, 0, 0), noble_rect)        # Background color for nobles
 
     # Blit population text onto game display
     game_display.blit(population_surface, population_rect)
@@ -107,7 +87,10 @@ def display_population_info(game_display, population, population_caps_grid, x, y
     # Blit hunter gatherer text onto game display
     game_display.blit(merchant_surface, merchant_rect)
 
-def counters(terrain_grid, surface, turn_counter, stage):
+    # Blit hunter gatherer text onto game display
+    game_display.blit(noble_surface, noble_rect)
+
+def counters(terrain_grid, surface, turn_counter, stage, states):
         # Display turn counter
         font = pygame.font.Font(None, 17)
         turn_text = f"Turn: {turn_counter}"
@@ -117,10 +100,14 @@ def counters(terrain_grid, surface, turn_counter, stage):
 
         for y in range(size_y):
             for x in range(size_x):
-                 if terrain_grid[y][x] == 6 and stage < 1:
+                if terrain_grid[y][x] == 6 and stage < 1:
                       stage += 1
-                 if terrain_grid[y][x] == 5 and stage < 2:
+                if terrain_grid[y][x] == 5 and stage < 2:
                       stage += 1
+                for state in states:
+                    towns_in_state = sum(1 for town in state['towns'])
+                    if towns_in_state > 1 and stage < 3:
+                        stage +=1
 
         if stage == 0:
             stage_name = 'Hunter-Gatherers'
@@ -128,7 +115,9 @@ def counters(terrain_grid, surface, turn_counter, stage):
             stage_name = 'Farming Communities'
         if stage == 2:
             stage_name = 'Permanent Settlements'
-        elif stage > 2:
+        if stage == 3:
+            stage_name = 'Early States'
+        elif stage > 3:
             stage_name = 'Broken History'
         # Display stage
         stage_text = f"Stage: {stage_name}"
@@ -136,85 +125,3 @@ def counters(terrain_grid, surface, turn_counter, stage):
         surface.blit(stage_surface, (UI_POSITION[0] + 10, UI_HEIGHT - 80))
 
 import pygame
-
-def draw_economy_overlay(screen, states):
-    # Get the dimensions of the game display
-    display_width, display_height = screen.get_size()
-
-    # Define the dimensions of the overlay rectangle
-    overlay_width = display_width - 200  # Reduce width by 20 pixels
-    overlay_height = display_height - 30  # Reduce height by 20 pixels
-
-    # Calculate the position of the overlay rectangle to center it on the screen
-    overlay_x = ((display_width - overlay_width) // 2) - 90
-    overlay_y = (display_height - overlay_height) // 2
-
-    # Define colors
-    grey = (192, 192, 192)
-    black = (0, 0, 0)
-
-    # Draw the grey rectangle
-    pygame.draw.rect(screen, grey, (overlay_x, overlay_y, overlay_width, overlay_height))
-
-    # Draw the black border
-    pygame.draw.rect(screen, black, (overlay_x, overlay_y, overlay_width, overlay_height), 3)
-
-    display_towns(screen, pygame.font.Font(None, 20), states, overlay_width, overlay_height, overlay_x, overlay_y)
-
-
-def commodities(states):
-    for state in states:
-        populations = state["population_counts"]
-        commodities = state["commodities"]
-        farmer_population = populations[2]
-        merchant_population = populations[3]
-        commodities += merchant_population * 0.3
-        commodities -= farmer_population * 0.1
-        state["commodities"] = round(commodities, 1)
-
-
-def display_towns(screen, font, states, overlay_width, overlay_height, overlay_x, overlay_y):
-    font_size = 16  # Font size for state names
-    commodities(states)
-
-    # Iterate over states
-    for i, state in enumerate(states):
-        name = state["name"]
-        color = state["colour"]
-        populations = state["population_counts"]
-        state_commodities = state["commodities"]
-        total_population = populations[0]  # Get total population from the state dictionary
-        merchant_population = populations[3]
-
-        # Render state name, total population, merchant population, and state commodities on separate lines
-        name_surface = font.render(name, True, (255, 255, 255))  # White text color
-        total_pop_surface = font.render(f"Total Population: {total_population}", True, (255, 255, 255))
-        merchant_pop_surface = font.render(f"Merchant Population: {merchant_population}", True, (255, 255, 255))
-        commodities_surface = font.render(f"Commodities: {i}", True, (255, 255, 255))
-
-        # Calculate vertical position for each line
-        name_rect = name_surface.get_rect()
-        total_pop_rect = total_pop_surface.get_rect()
-        merchant_pop_rect = merchant_pop_surface.get_rect()
-        commodities_rect = commodities_surface.get_rect()
-        if i < 11:
-            name_rect.topleft = (100, UI_HEIGHT - 700 + (i) * font_size * 4)
-            total_pop_rect.topleft = (100, UI_HEIGHT - 700 + 15 + (i) * font_size * 4)
-            merchant_pop_rect.topleft = (100, UI_HEIGHT - 700 + 30 + (i) * font_size * 4)
-            commodities_rect.topleft = (100, UI_HEIGHT - 700 + 45 + (i) * font_size * 4)
-        if i > 11:
-            name_rect.topleft = (200, UI_HEIGHT - 700 + (i - 10) * font_size * 4)
-            total_pop_rect.topleft = (200, UI_HEIGHT - 700 + 15 + (i - 10) * font_size * 4)
-            merchant_pop_rect.topleft = (200, UI_HEIGHT - 700 + 30 + (i - 10) * font_size * 4)
-            commodities_rect.topleft = (200, UI_HEIGHT - 700 + 45 + (i - 10) * font_size * 4)
-        # Draw background of state color for each line
-        pygame.draw.rect(screen, color, name_rect)
-        pygame.draw.rect(screen, color, total_pop_rect)
-        pygame.draw.rect(screen, color, merchant_pop_rect)
-        pygame.draw.rect(screen, color, commodities_rect)
-
-        # Blit text onto the overlay
-        screen.blit(name_surface, name_rect.topleft)
-        screen.blit(total_pop_surface, total_pop_rect.topleft)
-        screen.blit(merchant_pop_surface, merchant_pop_rect.topleft)
-        screen.blit(commodities_surface, commodities_rect.topleft)

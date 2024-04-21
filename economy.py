@@ -1,9 +1,7 @@
 from terrain_generation import get_name
 from graphics import get_random_color
 import pygame
-
-x_size = 53
-y_size = 33
+from parameters import WHITE, BLACK, GRAY, LIGHT_GRAY, DARK_GRAY, GREEN, UI_WIDTH, WINDOW_WIDTH, WINDOW_HEIGHT, UI_HEIGHT, UI_POSITION, BUTTON_HEIGHT, BUTTON_MARGIN, x_size, y_size, cell_size, cell_width, cell_height, GRID_WIDTH, GRID_HEIGHT
 
 def generate_state(i, town, x, y, states, territories, terrain_grid):
     single_name = town["name"]
@@ -11,9 +9,10 @@ def generate_state(i, town, x, y, states, territories, terrain_grid):
     colour = get_random_color([state["colour"] for state in states])
     names_list = []
     names_list.append(single_name)
-    states.append({"name": single_name, "state": i, "colour": colour, "towns": names_list})
-    for dy in range(-2, 3):
-        for dx in range(-2, 3):
+    population_counts = [0, 0, 0, 0, 0]
+    states.append({"name": single_name, "state": i, "colour": colour, "towns": names_list, "commodities": 0, "tax_rev": 0, "population_counts": population_counts})
+    for dy in range(-1, 2):
+        for dx in range(-1, 2):
             nx, ny = x + dx, y + dy
             if nx < x_size and ny < y_size:
                 if territories[ny][nx] == 0 and terrain_grid[ny][nx] != 1:
@@ -30,29 +29,13 @@ def add_to_state(i, n, town, x, y, states, territories, terrain_grid):
     else:
         # print("Adding ", name, " to existing state")
         states[n - 1]["towns"].append(name)
-        for dy in range(-2, 3):
-            for dx in range(-2, 3):
+        for dy in range(-1, 2):
+            for dx in range(-1, 2):
                 nx, ny = x + dx, y + dy
                 if nx < x_size and ny < y_size:
                     if territories[ny][nx] == 0 and terrain_grid[ny][nx] != 1:
                         territories[ny][nx] = n
     states
-
-def find_towns(population_grid, towns, states, territories, terrain_grid):
-    # print(towns)
-    z = 0
-    for i in towns:
-        town = towns[z]
-        # print(town)
-        x = town['position_x']
-        y = town['position_y']
-        if territories[y][x] == 0:
-            generate_state(z, town, x, y, states, territories, terrain_grid)
-        else:
-            n = territories[y][x]
-            add_to_state(z, n, town, x, y, states, territories, terrain_grid)
-        z += 1
-    return towns
 
 def borders(territories, states):
     territory_colors = []
@@ -110,7 +93,7 @@ def draw_territory_borders(territories, states, territory_colors, game_display, 
 
 def count_population_by_state(territories, population_grid, states):
     # Initialize counts for each state
-    state_populations = {state["name"]: [0, 0, 0, 0] for state in states}
+    state_populations = {state["name"]: [0, 0, 0, 0, 0] for state in states}
 
     # Iterate over territories
     for y in range(len(territories)):
@@ -120,13 +103,109 @@ def count_population_by_state(territories, population_grid, states):
                 state_index = territory_owner - 1
                 state_name = states[state_index]["name"]
                 # Update population counts for the corresponding state
-                state_populations[state_name][0] += population_grid[y][x][0]  # Count of pop 1
-                state_populations[state_name][1] += population_grid[y][x][1]  # Count of pop 2
-                state_populations[state_name][2] += population_grid[y][x][2]  # Count of pop 3
-                state_populations[state_name][3] += population_grid[y][x][3]  # Count of pop 4
+                state_populations[state_name][0] += population_grid[y][x][0]  # Sum of pops
+                state_populations[state_name][1] += population_grid[y][x][1]  # Count of Hunter-Gatherers
+                state_populations[state_name][2] += population_grid[y][x][2]  # Count of Farmers
+                state_populations[state_name][3] += population_grid[y][x][3]  # Count of Merchants
+                state_populations[state_name][4] += population_grid[y][x][4]  # Count of Nobles
 
     # Append population counts to the states list
     for state in states:
         state_name = state["name"]
         state["population_counts"] = state_populations[state_name]
-        state["commodities"] = 0
+
+def draw_economy_overlay(screen, states):
+    # Get the dimensions of the game display
+    display_width, display_height = screen.get_size()
+
+    # Define the dimensions of the overlay rectangle
+    overlay_width = display_width - 200  # Reduce width by 20 pixels
+    overlay_height = display_height - 30  # Reduce height by 20 pixels
+
+    # Calculate the position of the overlay rectangle to center it on the screen
+    overlay_x = ((display_width - overlay_width) // 2) - 90
+    overlay_y = (display_height - overlay_height) // 2
+
+    # Define colors
+    grey = (192, 192, 192)
+    black = (0, 0, 0)
+
+    # Draw the grey rectangle
+    pygame.draw.rect(screen, grey, (overlay_x, overlay_y, overlay_width, overlay_height))
+
+    # Draw the black border
+    pygame.draw.rect(screen, black, (overlay_x, overlay_y, overlay_width, overlay_height), 3)
+
+    display_towns(screen, pygame.font.Font(None, 20), states, overlay_width, overlay_height, overlay_x, overlay_y)
+
+
+def commodities(states):
+    if len(states) > 0:
+        for state in states:
+            populations = state["population_counts"]
+            commodities = state["commodities"]
+            tax_rev = state["tax_rev"]
+            farmer_population = populations[2]
+            merchant_population = populations[3]
+            noble_population = populations[4]
+            commodities += merchant_population * 0.2
+            commodities -= noble_population * 3
+            tax_rev = farmer_population*0.1
+            state["commodities"] = round(commodities, 2)
+            state["tax_rev"] = round(tax_rev, 2)
+
+
+def display_towns(screen, font, states, overlay_width, overlay_height, overlay_x, overlay_y):
+    font_size = 16  # Font size for state names
+
+    # commodities(states)
+
+    # Iterate over states
+    for i, state in enumerate(states):
+        name = state["name"]
+        color = state["colour"]
+        populations = state["population_counts"]
+        state_commodities = state["commodities"]
+        tax_rev = state["tax_rev"]
+        total_population = populations[0]  # Get total population from the state dictionary
+        farmer_population = populations[2]
+        merchant_population = populations[3]
+        noble_population = populations[4]
+
+        # Render state name, total population, merchant population, and state commodities on separate lines
+        name_surface = font.render(name, True, (255, 255, 255))  # White text color
+        total_pop_surface = font.render(f"Total Population: {total_population}", True, (255, 255, 255))
+        merchant_pop_surface = font.render(f"Merchant Population: {merchant_population}            Noble Population: {noble_population}            Farmer Population: {farmer_population}", True, (255, 255, 255))
+        commodities_surface = font.render(f"Commodities: {state_commodities}                      Tax Revenue: {tax_rev}", True, (255, 255, 255))
+
+        # Calculate vertical position for each line
+        name_rect = name_surface.get_rect()
+        total_pop_rect = total_pop_surface.get_rect()
+        merchant_pop_rect = merchant_pop_surface.get_rect()
+        commodities_rect = commodities_surface.get_rect()
+        if i < 10:
+            name_rect.topleft = (100, UI_HEIGHT - 700 + (i) * font_size * 4)
+            total_pop_rect.topleft = (100, UI_HEIGHT - 700 + 15 + (i) * font_size * 4)
+            merchant_pop_rect.topleft = (100, UI_HEIGHT - 700 + 30 + (i) * font_size * 4)
+            commodities_rect.topleft = (100, UI_HEIGHT - 700 + 45 + (i) * font_size * 4)
+        if i > 9 and i < 20:
+            name_rect.topleft = (500, UI_HEIGHT - 700 + (i - 10) * font_size * 4)
+            total_pop_rect.topleft = (500, UI_HEIGHT - 700 + 15 + (i - 10) * font_size * 4)
+            merchant_pop_rect.topleft = (500, UI_HEIGHT - 700 + 30 + (i - 10) * font_size * 4)
+            commodities_rect.topleft = (500, UI_HEIGHT - 700 + 45 + (i - 10) * font_size * 4)
+        if i > 20:
+            name_rect.topleft = (900, UI_HEIGHT - 700 + (i - 10) * font_size * 4)
+            total_pop_rect.topleft = (900, UI_HEIGHT - 700 + 15 + (i - 10) * font_size * 4)
+            merchant_pop_rect.topleft = (900, UI_HEIGHT - 700 + 30 + (i - 10) * font_size * 4)
+            commodities_rect.topleft = (900, UI_HEIGHT - 700 + 45 + (i - 10) * font_size * 4)
+        # Draw background of state color for each line
+        pygame.draw.rect(screen, color, name_rect)
+        pygame.draw.rect(screen, color, total_pop_rect)
+        pygame.draw.rect(screen, color, merchant_pop_rect)
+        pygame.draw.rect(screen, color, commodities_rect)
+
+        # Blit text onto the overlay
+        screen.blit(name_surface, name_rect.topleft)
+        screen.blit(total_pop_surface, total_pop_rect.topleft)
+        screen.blit(merchant_pop_surface, merchant_pop_rect.topleft)
+        screen.blit(commodities_surface, commodities_rect.topleft)
