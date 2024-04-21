@@ -3,6 +3,7 @@ from terrain_generation import get_neighbors, get_population_neighbors, get_name
 from economy import generate_state, add_to_state
 import random
 import math
+from parameters import WHITE
 
 def find_towns(population_grid, towns, states, territories, terrain_grid):
     # print(towns)
@@ -25,7 +26,7 @@ def generate_population_grid(size_y, size_x, terrain_grid):
     population_grid = np.zeros((size_y, size_x, 8), dtype=int)
     territories = np.zeros((size_y, size_x), dtype=int)
 
-    initial_population_caps = np.zeros((size_y, size_x))
+    initial_population_caps_grid = np.zeros((size_y, size_x))
 
     # Randomly select one box for initial population
     initial_box_x = np.random.randint(20,size_x-20)
@@ -40,7 +41,7 @@ def generate_population_grid(size_y, size_x, terrain_grid):
         for x in range(size_x):
             if terrain_grid[y][x] == 2:  # Field tile
                 random_integer = np.random.randint(5, 11)
-                initial_population_caps[y][x] = random_integer
+                initial_population_caps_grid[y][x] = random_integer
 
     # Allocate population between 1 and 5 in the selected box
     population_grid[initial_box_y][initial_box_x][1] = np.random.randint(2, 6)
@@ -50,7 +51,8 @@ def generate_population_grid(size_y, size_x, terrain_grid):
 
     towns = []
     states = []
-    return population_grid, initial_population_caps, towns, states, territories
+    states.append({"name": 'blank', "state": 0, "colour": WHITE, "towns": ('none'), "commodities": 0, "tax_rev": 0, "population_counts": (0,0,0,0,0), "expansionism": 0, "military_power": 0, "noble_growth": 0, "unrest": 0, "status": 0, "index": 0, "capital": 'none'})
+    return population_grid, initial_population_caps_grid, towns, states, territories
 
 
 def initial_population_caps(terrain_grid):

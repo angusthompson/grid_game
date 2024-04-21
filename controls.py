@@ -3,6 +3,7 @@ from terrain_generation import generate_terrain_grid
 from graphics import draw_terrain, determine_terrain_color, draw_terrain_and_population, draw_road_overlay, draw_tribe_location
 from primitive_movement import move_population_up, move_population_down, move_population_left, move_population_right, find_starting_location, convert_to_farmers
 from economy import commodities, check_towns
+import time
 
 def move_up(population_grid, terrain_grid, current_tribe_location, population_caps_grid, initial_population_caps_grid, turn_counter, towns, states, territories):
     # Simulate the 'Up' button click
@@ -30,13 +31,19 @@ def move_right(population_grid, terrain_grid, current_tribe_location, population
 
 def advance(population_grid, terrain_grid, current_tribe_location, population_caps_grid, initial_population_caps_grid, turn_counter, towns, states, territories):
     population_caps_grid = update_population_caps(initial_population_caps_grid, terrain_grid, population_grid)
+    time.sleep(0.01)
     population_grid, terrain_grid = simulate_population_growth(current_tribe_location, population_grid, population_caps_grid, terrain_grid)
+    time.sleep(0.01)
     population_grid, terrain_grid, towns, states, territories = simulate_population_attrition(current_tribe_location, population_grid, population_caps_grid, terrain_grid, towns, states, territories)
+    time.sleep(0.01)
     population_caps_grid = update_population_caps(initial_population_caps_grid, terrain_grid, population_grid)
     road_grid = generate_road_grid(population_grid, terrain_grid, population_grid, current_tribe_location)
     turn_counter += 1
+    time.sleep(0.01)
     commodities(states, territories, population_grid, terrain_grid, towns)
+    time.sleep(0.01)
     check_towns(towns, states, territories)
+    time.sleep(0.01)
     return population_grid, terrain_grid, current_tribe_location, population_caps_grid, road_grid, turn_counter, towns, states, territories
 
 def convert_to_farmers_button(population_grid, terrain_grid, current_tribe_location, population_caps_grid, initial_population_caps_grid, turn_counter, stage, towns, states, territories):

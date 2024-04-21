@@ -11,7 +11,7 @@ def generate_state(i, town, x, y, states, territories, terrain_grid):
     names_list = []
     names_list.append(single_name)
     population_counts = [0, 0, 0, 0, 0]
-    index = len(states)+1
+    index = len(states)
     states.append({"name": single_name, "state": i, "colour": colour, "towns": names_list, "commodities": 0, "tax_rev": 0, "population_counts": population_counts, "expansionism": 0, "military_power": 0, "noble_growth": 0, "unrest": 0, "status": 1, "index": index, "capital": (y, x)})
     for dy in range(-1, 2):
         for dx in range(-1, 2):
@@ -30,7 +30,7 @@ def add_to_state(i, n, town, x, y, states, territories, terrain_grid):
         pass
     else:
         # print("Adding ", name, " to existing state")
-        states[n - 1]["towns"].append(name)
+        states[n-1]["towns"].append(name)
         for dy in range(-1, 2):
             for dx in range(-1, 2):
                 nx, ny = x + dx, y + dy
@@ -182,7 +182,8 @@ def display_towns(screen, font, states, overlay_width, overlay_height, overlay_x
     font_size = 16  # Font size for state names
     # filtered_states = [state.copy() for state in states if state.get("status", 0) != 0]
     # Iterate over states
-    for i, state in enumerate(states):
+    sublist_states = [state.copy() for state in states if state.get("towns") != 'none']
+    for i, state in enumerate(sublist_states):
         name = state["name"]
         color = state["colour"]
         populations = state["population_counts"]
@@ -260,37 +261,36 @@ def expand_states(states, territories, population_grid, terrain_grid, towns):
             capital_y, capital_x = state["capital"]
             # Choose a random unclaimed tile neighboring the state's territory
             unclaimed_tiles = find_unclaimed_neighbors(territories, state, terrain_grid)
-            if len(unclaimed_tiles) > 0:
+            if unclaimed_tiles:
                 chosen_tile = random.choice(unclaimed_tiles)
                 # Generate a new noble and add it to the state's territory
                 x, y = chosen_tile
                 population_grid[y][x][4] += 1
                 territories[y][x] = state_index
                 state["commodities"] += 100
-            if len(unclaimed_tiles) == 0:
-                foreign_neighbors = find_foreign_neighbors(territories, state, terrain_grid, states, towns)
-                if len(foreign_neighbors) > 0:
-                    # If there are no unclaimed tiles but there are foreign neighbors, claim the foreign state's land
-                    foreign_neighbors.sort(key=lambda neighbor: neighbor[2])  # Sort by military power (index 2)
-                    chosen_tile = foreign_neighbors[0]  # Choose the foreign tile with the lowest military power
-                    x, y, neighbor_state_index = chosen_tile
-                    print("neighbour state index = ", neighbor_state_index)
-                    print("number of states = ", len(states))
-                    if population_grid[y][x][4] == 0: population_grid[y][x][4] += 1
-                    if population_grid[y][x][2] > 0: population_grid[y][x][2] -= population_grid[y][x][2]*0.3
-                    if population_grid[y][x][3] > 0: population_grid[y][x][3] -= population_grid[y][x][3]*0.3
-                    # Add check for comparative military power
+            elif foreign_neighbors := find_foreign_neighbors(territories, state, terrain_grid, states, towns):
+                # If there are no unclaimed tiles but there are foreign neighbors, claim the foreign state's land
+                foreign_neighbors.sort(key=lambda neighbor: neighbor[2])  # Sort by military power (index 2)
+                chosen_tile = foreign_neighbors[0]  # Choose the foreign tile with the lowest military power
+                x, y, neighbor_state_index = chosen_tile
+                if population_grid[y][x][4] == 0: population_grid[y][x][4] += 1
+                if population_grid[y][x][2] > 0: population_grid[y][x][2] -= population_grid[y][x][2]*0.3
+                if population_grid[y][x][3] > 0: population_grid[y][x][3] -= population_grid[y][x][3]*0.3
+                # Add check for comparative military power
+                if neighbor_state_index != len(states):
                     if state["military_power"] > states[neighbor_state_index]["military_power"]:
                         territories[y][x] = state_index
                         state["military_power"] -= states[neighbor_state_index]["military_power"]
                         states[neighbor_state_index]["military_power"] = 0
                         state["commodities"] += 100
                         neighbor_state = states[neighbor_state_index - 1]
-                    else:
-                        state["military_power"] -= states[neighbor_state_index]["military_power"]
-                        state["military_power"] = 0
-                        states[neighbor_state_index]["military_power"] -= state["military_power"]
+                elif neighbor_state_index == len(states): pass
+                else:
+                    state["military_power"] -= states[neighbor_state_index]["military_power"]
+                    state["military_power"] = 0
+                    states[neighbor_state_index]["military_power"] -= state["military_power"]
     return states
+
 
 def find_unclaimed_neighbors(territories, state, terrain_grid):
     unclaimed_neighbors = []
@@ -350,22 +350,15 @@ def check_towns(towns, states, territories):
         state_index = state["index"]
         town_names = []
         for town in towns:
-            town_name = town["name"]
             town_y, town_x = town["position_y"], town["position_x"]
-            for y in range(len(territories)):
-                for x in range(len(territories[y])):
-                    if town_y == y and town_x == x:
-                        print(territories[y][x])
-                        print(state_index)
-                        if territories[y][x] == state_index:
-                            town_names.append(town_name)
-            state["towns"] = town_names
+            if territories[town_y][town_x] == state_index:
+                town_names.append(town["name"])
+        state["towns"] = town_names
 
-        if not state["towns"]:
+        if not town_names:
             state["status"] = 0
             state["towns"] = "none"
-            for y in range(len(territories)):
-                for x in range(len(territories[y])):
-                    if territories[y][x] == state_index:
+            for y, row in enumerate(territories):
+                for x, tile in enumerate(row):
+                    if tile == state_index:
                         territories[y][x] = 0
-

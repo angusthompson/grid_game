@@ -3,6 +3,7 @@ from pygame.locals import *
 import sys
 import numpy as np
 import random
+import time
 from ui import draw_button, is_hover, display_population_info, counters
 from population_simulation import generate_population_grid, initial_population_caps, update_population_caps, simulate_population_growth, generate_road_grid
 from terrain_generation import generate_terrain_grid
@@ -18,7 +19,12 @@ pygame.init()
 # Set up the display
 WINDOW_SIZE = (WINDOW_WIDTH, WINDOW_HEIGHT)
 game_display = pygame.display.set_mode(WINDOW_SIZE)
-pygame.display.set_caption('Grid Game!                                                                         v8.1.2')
+pygame.display.set_caption('Grid Game!                                                                                  v8.1.4')
+
+class Button:
+    def __init__(self, label, rect):
+        self.label = label
+        self.rect = rect
 
 border_overlay_visible = False
 names_overlay_visible = False
@@ -33,8 +39,14 @@ def main():
     # cell_size = 24
     # Generate terrain grid
     terrain_grid = generate_terrain_grid(size_x=x_size, size_y=y_size, num_iterations=5)
+    print("terrain initialised")
+    time.sleep(1)
     population_grid, initial_caps, towns, states, territories = generate_population_grid(size_y=y_size, size_x=x_size, terrain_grid=terrain_grid)
+    print("population initialised")
+    time.sleep(1)
     population_caps_grid = initial_population_caps(terrain_grid)
+    print("pop caps initialised")
+    time.sleep(1)
     #Stage and turn
     turn_counter = 0
     stage = 0
@@ -73,7 +85,7 @@ def main():
 
         # Draw terrain
         draw_terrain_and_population(terrain_grid, population_grid, cell_size)
-            
+
         advance_button_rect = pygame.Rect(UI_POSITION[0] + 10, UI_HEIGHT - BUTTON_HEIGHT - 10, BUTTON_WIDTH * 3.8 + BUTTON_MARGIN, BUTTON_HEIGHT)
         button_1_rect = pygame.Rect(UI_POSITION[0] + 10, UI_POSITION[1] + 10, BUTTON_WIDTH, BUTTON_HEIGHT)
         button_2_rect = pygame.Rect(UI_POSITION[0] + 10, UI_POSITION[1] + 10 + (BUTTON_HEIGHT + BUTTON_MARGIN) * 1, BUTTON_WIDTH, BUTTON_HEIGHT)
