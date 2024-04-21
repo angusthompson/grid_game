@@ -30,7 +30,6 @@ cell_width = (WINDOW_WIDTH - UI_WIDTH) // x_size
 cell_height = WINDOW_HEIGHT // y_size
 GRID_WIDTH = cell_width*x_size
 GRID_HEIGHT = cell_height*y_size
-
 x_size = 53
 y_size = 33
 cell_size = 24
