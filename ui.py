@@ -19,7 +19,7 @@ def is_hover(mouse_pos, button_rect):
     return button_rect.collidepoint(mouse_pos)
 
 # Function to display the population information box
-def display_population_info(game_display, population, population_caps_grid, x, y, tile_x, tile_y):
+def display_population_info(game_display, population, population_caps_grid, x, y, tile_x, tile_y, terrain_grid):
     font = pygame.font.Font(None, 20)
 
     popcap = population_caps_grid[tile_y][tile_x]
@@ -71,6 +71,14 @@ def display_population_info(game_display, population, population_caps_grid, x, y
     noble_rect = noble_surface.get_rect()
     noble_rect.topleft = (x + 15, y  + population_rect.height*5 + 25)
     pygame.draw.rect(game_display, (0, 0, 0), noble_rect)        # Background color for nobles
+
+    # # Render noble text
+    # noble_text = "Terrain type: " + str(terrain_grid[tile_y][tile_x])
+    # noble_surface = font.render(noble_text, True, (255, 255, 255))
+    # # Calculate text rect for nobles
+    # noble_rect = noble_surface.get_rect()
+    # noble_rect.topleft = (x + 15, y  + population_rect.height*5 + 25)
+    # pygame.draw.rect(game_display, (0, 0, 0), noble_rect)        # Background color for nobles
 
     # Blit population text onto game display
     game_display.blit(population_surface, population_rect)

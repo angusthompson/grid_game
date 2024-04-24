@@ -52,16 +52,16 @@ def get_population_neighbors(population_grid, grid, x, y):
                 if 0 <= nx < len(grid[0]) and 0 <= ny < len(grid) and (nx != x or ny != y):
                     hunter_neighbors += population_grid[ny][nx][1]
                 if 0 <= nx < len(grid[0]) and 0 <= ny < len(grid) and (nx != x or ny != y):
-                    hunter_neighbors += population_grid[ny][nx][2]
+                    farmer_neighbors += population_grid[ny][nx][2]
                 if 0 <= nx < len(grid[0]) and 0 <= ny < len(grid) and (nx != x or ny != y):
                     merchant_neighbors += population_grid[ny][nx][3]
     return population_neighbors, hunter_neighbors, farmer_neighbors, merchant_neighbors
 
 def get_name(y, x):
-    prefixes = ['Port','Fort','San','Saint','Inver','Dun','Mont','Kil','New ','Nov','Novo','Nowy','New','Stara','Stary','Nan','Yan','Qing']
+    prefixes = ['Port','Fort','San','Saint','Inver','Dun','Mont', 'Monte', 'Kil','New ','Nov','Novo','Nowy','New','Stara','Stary','Nan','Yan','Qing']
     names = ['buck','guang','storn','marn','kyot','der','luck','ber','lin','par','rom','bei','piet','mos','stan','sevast','then','mad','edin','']
     capitalised_names = ['Buck','Guang','Storn','Marn','Kyot','Der','Luck','Ber','Lin','Par','Rom','Bei','Piet','Mos','Stan','Sevas','Then','Mad','Edin']
-    suffixes = ['ock','och','gorod','grad','burg','berg','bourg','ness','burgh','borough','zhou','gard','to','ople','insk','ovsk','stead','ham','opol','now','']
+    suffixes = ['ock','och','gorod','grad','burg','berg','bourg','ness','burgh','borough','zhou','gard','to','ople','insk','ovsk','stead','ham','opol','now','zuma', '']
     random_prefix = random.choice(prefixes)
     random_name = random.choice(names)
     capitalised_random_name = random.choice(capitalised_names)

@@ -7,7 +7,7 @@ import time
 from ui import draw_button, is_hover, display_population_info, counters
 from population_simulation import generate_population_grid, initial_population_caps, update_population_caps, simulate_population_growth, generate_road_grid
 from terrain_generation import generate_terrain_grid
-from graphics import draw_terrain, determine_terrain_color, draw_terrain_and_population, draw_road_overlay, draw_tribe_location, borders
+from graphics import draw_terrain, determine_terrain_color, draw_terrain_and_population, draw_road_overlay, draw_tribe_location, borders, draw_towns_overlay
 from primitive_movement import move_population_up, move_population_down, move_population_left, move_population_right, find_starting_location, convert_to_farmers
 from controls import move_down, move_left, move_right, move_up, advance, convert_to_farmers_button
 from economy import borders, draw_territory_borders, count_population_by_state, draw_economy_overlay
@@ -29,6 +29,7 @@ class Button:
 border_overlay_visible = False
 names_overlay_visible = False
 economy_overlay_visible = False
+towns_overlay_visible = False
 
 # Main game loop
 def main():
@@ -40,13 +41,13 @@ def main():
     # Generate terrain grid
     terrain_grid = generate_terrain_grid(size_x=x_size, size_y=y_size, num_iterations=5)
     print("terrain initialised")
-    time.sleep(1)
+    time.sleep(0.5)
     population_grid, initial_caps, towns, states, territories = generate_population_grid(size_y=y_size, size_x=x_size, terrain_grid=terrain_grid)
     print("population initialised")
-    time.sleep(1)
+    time.sleep(0.5)
     population_caps_grid = initial_population_caps(terrain_grid)
     print("pop caps initialised")
-    time.sleep(1)
+    time.sleep(0.5)
     #Stage and turn
     turn_counter = 0
     stage = 0
@@ -55,6 +56,7 @@ def main():
     global border_overlay_visible
     global names_overlay_visible
     global economy_overlay_visible
+    global towns_overlay_visible
 
     # Calculate cell sizes based on the dimensions of the window and terrain grid
     cell_width = (WINDOW_WIDTH - UI_WIDTH) // x_size
@@ -64,7 +66,7 @@ def main():
     GRID_WIDTH = cell_width*x_size
     GRID_HEIGHT = cell_height*y_size
 
-    button_labels = ['^', 'v', '<-', '->','S','-','-','-','Borders','Towns','Economies','SR','-','-','-','-']
+    button_labels = ['^', 'v', '<-', '->','S','-','-','-','Borders','Names','Economies','Towns','-','-','-','-']
 
     current_tribe_location = (0, 0)
     current_tribe_location = find_starting_location(population_grid)
@@ -95,6 +97,7 @@ def main():
         button_10_rect = pygame.Rect(UI_POSITION[0] + 10 + (BUTTON_HEIGHT + BUTTON_MARGIN), UI_POSITION[1] + 10, BUTTON_WIDTH*2, BUTTON_HEIGHT)
         button_11_rect = pygame.Rect(UI_POSITION[0] + 10 + (BUTTON_HEIGHT + BUTTON_MARGIN), UI_POSITION[1] + 10 + (BUTTON_HEIGHT + BUTTON_MARGIN), BUTTON_WIDTH*2, BUTTON_HEIGHT)
         button_12_rect = pygame.Rect(UI_POSITION[0] + 10 + (BUTTON_HEIGHT + BUTTON_MARGIN), UI_POSITION[1] + 10 + (BUTTON_HEIGHT + BUTTON_MARGIN) * 2, BUTTON_WIDTH*2, BUTTON_HEIGHT)
+        button_13_rect = pygame.Rect(UI_POSITION[0] + 10 + (BUTTON_HEIGHT + BUTTON_MARGIN), UI_POSITION[1] + 10 + (BUTTON_HEIGHT + BUTTON_MARGIN) * 3, BUTTON_WIDTH*2, BUTTON_HEIGHT)
 
         mouse_x, mouse_y = pygame.mouse.get_pos()
 
@@ -129,6 +132,8 @@ def main():
                     names_overlay_visible = not names_overlay_visible
                 elif is_hover(pygame.mouse.get_pos(), button_12_rect):
                     economy_overlay_visible = not economy_overlay_visible
+                elif is_hover(pygame.mouse.get_pos(), button_13_rect):
+                    towns_overlay_visible = not towns_overlay_visible
             elif event.type == pygame.KEYDOWN:
                 # Check for keyboard input
                 if event.key == pygame.K_UP:
@@ -219,10 +224,13 @@ def main():
                     
             # Display population info box when hovering over a tile
             if 0 <= tile_x < x_size and 0 <= tile_y < y_size:
-                display_population_info(game_display, population_grid[tile_y][tile_x], population_caps_grid, mouse_x, mouse_y, tile_x, tile_y)
+                display_population_info(game_display, population_grid[tile_y][tile_x], population_caps_grid, mouse_x, mouse_y, tile_x, tile_y, terrain_grid)
 
         if economy_overlay_visible:
             draw_economy_overlay(game_display, states)
+
+        if towns_overlay_visible:
+            draw_towns_overlay(game_display, towns)
 
         # Update the display
         pygame.display.flip()

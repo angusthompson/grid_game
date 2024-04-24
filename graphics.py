@@ -59,7 +59,6 @@ def determine_terrain_color(terrain_type):
         return RED
     elif terrain_type == 8:  # Ice cap
         return WHITE
-    
 
 def draw_terrain_and_population(terrain_grid, population_grid, cell_size):
     for y in range(len(terrain_grid)):
@@ -132,15 +131,86 @@ def borders(terrain_grid, population_grid, town_positions, cell_size, game_displ
 def get_random_color(existing_colors):
     while True:
         # Generate a random color
-        color = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
+        color = (random.randint(50, 200), random.randint(50, 200), random.randint(50, 200))
         # Check similarity with existing colors
         similar_color = False
         for existing_color in existing_colors:
             # Calculate Euclidean distance between colors
             distance = math.sqrt(sum((c1 - c2) ** 2 for c1, c2 in zip(color, existing_color)))
-            if distance < 100:  # Adjust this threshold as needed
-                similar_color = True
-                break
+            if distance < 70:  # Adjust this threshold as needed
+                color = (random.randint(50, 200), random.randint(50, 200), random.randint(50, 200))
         
         if not similar_color:
             return color
+        
+
+def draw_towns_overlay(screen, towns):
+    # Get the dimensions of the game display
+    display_width, display_height = screen.get_size()
+
+    # Define the dimensions of the overlay rectangle
+    overlay_width = display_width - 200  # Reduce width by 20 pixels
+    overlay_height = display_height - 30  # Reduce height by 20 pixels
+
+    # Calculate the position of the overlay rectangle to center it on the screen
+    overlay_x = ((display_width - overlay_width) // 2) - 90
+    overlay_y = (display_height - overlay_height) // 2
+
+    # Define colors
+    grey = (192, 192, 192)
+    black = (0, 0, 0)
+
+    # Draw the grey rectangle
+    pygame.draw.rect(screen, grey, (overlay_x, overlay_y, overlay_width, overlay_height))
+
+    # Draw the black border
+    pygame.draw.rect(screen, black, (overlay_x, overlay_y, overlay_width, overlay_height), 3)
+
+    display_towns_only(screen, pygame.font.Font(None, 20), towns, overlay_width, overlay_height, overlay_x, overlay_y)
+
+
+def display_towns_only(screen, font, towns, overlay_width, overlay_height, overlay_x, overlay_y):
+    if len(towns) > 0:
+        # Font settings
+        title_font = pygame.font.SysFont(None, 20, bold=True)
+        font_size = 12  # Font size for other cells
+
+        overlay_x += 25
+        overlay_y += 10  # Move down vertically by 10 pixels
+        # Calculate cell dimensions
+        cell_width = (overlay_width-70) // 6  # Adjusted to make room for wider "Populations" column
+        cell_height = font_size * 1.5  # Adjust based on font size
+
+        titles = ["Name", "Position x", "Position y", "Owner", "Colour", "Founder"]
+
+        # Extract color values from "Colour" column
+        colors = [town["colour"] for town in towns]
+
+        # Draw column titles
+        for i, title in enumerate(titles):
+            title_surface = title_font.render(title, True, BLACK)
+            title_rect = title_surface.get_rect(center=(overlay_x + (i + 0.5) * cell_width, overlay_y + cell_height / 2))
+            screen.blit(title_surface, title_rect)
+
+        # Loop through data and draw each cell
+        for i, town in enumerate(towns):
+            # Calculate row position
+            row_y = overlay_y + (i + 1) * cell_height  # Start after the title row
+            
+            # Loop through town attributes and draw each cell
+            for j, (key, value) in enumerate(town.items()):
+                # Calculate cell position
+                cell_x = overlay_x + j * cell_width
+
+                # Draw cell rectangle
+                pygame.draw.rect(screen, colors[i], (cell_x, row_y, cell_width, cell_height))
+                pygame.draw.rect(screen, BLACK, (cell_x, row_y, cell_width, cell_height), 1)
+
+                # Render text
+                text_surface = font.render(str(value), True, BLACK)
+                text_rect = text_surface.get_rect(center=(cell_x + cell_width / 2, row_y + cell_height / 2))
+
+                # Blit text to screen
+                screen.blit(text_surface, text_rect)
+    else:
+        pass
