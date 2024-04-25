@@ -51,11 +51,11 @@ def determine_terrain_color(terrain_type):
         return GREY
     elif terrain_type == 4:
         return YELLOW
-    elif terrain_type == 5:  # Village
+    elif terrain_type == 5:  # Town
         return DARK_ORANGE
     elif terrain_type == 6:  # Farmland
         return DARK_GREEN
-    elif terrain_type == 7:  # Town
+    elif terrain_type == 7:  # City
         return RED
     elif terrain_type == 8:  # Ice cap
         return WHITE
@@ -178,13 +178,14 @@ def display_towns_only(screen, font, towns, overlay_width, overlay_height, overl
         overlay_x += 25
         overlay_y += 10  # Move down vertically by 10 pixels
         # Calculate cell dimensions
-        cell_width = (overlay_width-70) // 6  # Adjusted to make room for wider "Populations" column
+        cell_width = (overlay_width-70) // 7  # Adjusted to make room for wider "Populations" column
         cell_height = font_size * 1.5  # Adjust based on font size
 
-        titles = ["Name", "Position x", "Position y", "Owner", "Colour", "Founder"]
+        titles = ["Name", "Position x", "Position y", "Founder", "Owner", "Movement", "Unrest"]
 
         # Extract color values from "Colour" column
         colors = [town["colour"] for town in towns]
+        town_values_to_show = [{key: value for key, value in town.items() if key not in ["colour"]} for town in towns]
 
         # Draw column titles
         for i, title in enumerate(titles):
@@ -193,7 +194,7 @@ def display_towns_only(screen, font, towns, overlay_width, overlay_height, overl
             screen.blit(title_surface, title_rect)
 
         # Loop through data and draw each cell
-        for i, town in enumerate(towns):
+        for i, town in enumerate(town_values_to_show):
             # Calculate row position
             row_y = overlay_y + (i + 1) * cell_height  # Start after the title row
             

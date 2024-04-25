@@ -3,16 +3,21 @@ from graphics import get_random_color
 import pygame
 from parameters import WHITE, BLACK, GRAY, LIGHT_GRAY, DARK_GRAY, GREEN, UI_WIDTH, WINDOW_WIDTH, WINDOW_HEIGHT, UI_HEIGHT, UI_POSITION, BUTTON_HEIGHT, BUTTON_MARGIN, x_size, y_size, cell_size, cell_width, cell_height, GRID_WIDTH, GRID_HEIGHT
 import random
+from revolts import revolt, bourgeois_revolution, secession
 
 def generate_state(i, town, x, y, states, territories, terrain_grid):
     single_name = town["name"]
     colour = get_random_color([state["colour"] for state in states])
     names_list = []
     names_list.append(single_name)
-    population_counts = [0, 0, 0, 0, 0]
+    population_counts = [0, 0, 0, 0, 0, 0, 0, 0]
     index = len(states)
-    states.append({"name": single_name, "state": i, "colour": colour, "towns": names_list, "commodities": 0, "tax_rev": 0, "population_counts": population_counts, "expansionism": 0, "military_power": 0, "noble_growth": 0, "unrest": 0, "status": 1, "index": index, "capital": (y, x)})
-    town["founder"] = index
+    # new_state = {"name": single_name, "state": i, "colour": colour, "towns": names_list, "commodities": 0, "tax_rev": 0, "population_counts": population_counts, "expansionism": 0, "military_power": 0, "noble_growth": 0, "unrest": 0, "status": 1, "index": index, "capital": (y, x)}
+    states.append({"name": single_name, "state": i, "colour": colour, "towns": names_list, "commodities": 0, "tax_rev": 0, "population_counts": population_counts, "expansionism": 0, "military_power": 0, "noble_growth": 0, "unrest": 0, "status": 'Primitive Accumulation', "index": index, "capital": (y, x)})
+    # print(new_state)
+    if town["founder"] == 0:
+        town["founder"] = index
+    town["owner"] = index
     town["colour"] = colour
     for dy in range(-1, 2):
         for dx in range(-1, 2):
@@ -33,7 +38,9 @@ def add_to_state(i, n, town, x, y, states, territories, terrain_grid):
         if not isinstance(states[n-1].get("towns"), list):
             states[n-1]["towns"] = [states[n-1]["towns"]]
         states[n-1]["towns"].append(name)
-        town["founder"] = state["index"]
+        if town["founder"] == 0:
+            town["founder"] = state["index"]
+        town["owner"] = state["index"]
         town["colour"] = state["colour"]
         for dy in range(-1, 2):
             for dx in range(-1, 2):
@@ -99,7 +106,7 @@ def draw_territory_borders(territories, states, territory_colors, game_display, 
 
 def count_population_by_state(territories, population_grid, states):
     # Initialize counts for each state
-    state_populations = {state["name"]: [0, 0, 0, 0, 0] for state in states}
+    state_populations = {state["name"]: [0, 0, 0, 0, 0, 0, 0] for state in states}
 
     # Iterate over territories
     for y in range(len(territories)):
@@ -114,6 +121,8 @@ def count_population_by_state(territories, population_grid, states):
                 state_populations[state_name][2] += population_grid[y][x][2]  # Count of Farmers
                 state_populations[state_name][3] += population_grid[y][x][3]  # Count of Merchants
                 state_populations[state_name][4] += population_grid[y][x][4]  # Count of Nobles
+                state_populations[state_name][5] += population_grid[y][x][5]  # Count of Nobles
+                state_populations[state_name][6] += population_grid[y][x][6]  # Count of Nobles
 
     # Append population counts to the states list
     for state in states:
@@ -152,7 +161,7 @@ def draw_economy_overlay(screen, states):
 
 
 def commodities(states, territories, population_grid, terrain_grid, towns):
-    taxes = (0, 0, 0.1, 0.1, 0)             # Tax rates on full population, hunter-gatherers, farmers, mechants, nobles
+    taxes = (0, 0, 0.1, 0.1, 0.1, 0.1, 0.1)             # Tax rates on full population, hunter-gatherers, farmers, mechants, nobles, etc.
     if len(states) > 0:
         for state in states:
             populations = state["population_counts"]
@@ -162,21 +171,71 @@ def commodities(states, territories, population_grid, terrain_grid, towns):
             expansionism = state["expansionism"]
             military_power = state["military_power"]
             unrest = state["unrest"]
+            name = state["name"]
             farmer_population = populations[2]
             merchant_population = populations[3]
             noble_population = populations[4]
+            if len(populations) < 6:
+                populations.append(0)
+                populations.append(0)
+                populations.append(0)
+            proletarian_population = populations[5]
+            bourgeois_population = populations[6]
+
+            # Commodity Production and consumption
             commodities += merchant_population * 1
-            commodities -= noble_population * 10
-            tax_rev = farmer_population*taxes[2] + merchant_population*taxes[3]
+            commodities += proletarian_population * 5
+            commodities -= noble_population * 7
+            commodities -= bourgeois_population * 15
+
+            # Tax Revenue
+            tax_rev = farmer_population*taxes[2] + merchant_population*taxes[3] + proletarian_population*taxes[5] + bourgeois_population*taxes[6]
+
+            # Noble growth and expansion
             noble_growth += merchant_population*0.1
             if noble_growth > 10 and tax_rev > 5:
                 expand_states(states, territories, population_grid, terrain_grid, towns)
                 tax_rev -= 5
+            if noble_growth > 10:
+                # Step 1: Randomly select one of the town names from the current entry in 'states'
+                if len(state["towns"]) > 0:
+                    nobles_to_add = noble_growth // 10
+                    noble_growth -= nobles_to_add*10
+                    selected_town_name = random.choice(state["towns"])
+                    # Step 2: Find the corresponding dictionary in 'towns' with the selected town name
+                    selected_town = next((town for town in towns if town["name"] == selected_town_name), None)
+                    if selected_town:
+                        x_position = selected_town["position_x"]
+                        y_position = selected_town["position_y"]
+                        population_grid[y_position][x_position][4] += nobles_to_add
+                    state["population_counts"] = populations
+                    state["noble_growth"] = noble_growth
+
+            # Unrest and Military Buildup
+            military_power += tax_rev
             if commodities < 0:
-                military_power += tax_rev
-                unrest -= commodities
+                # military_power += tax_rev
+                unrest += (-commodities)
             if commodities > 0 and unrest > 0:
                 unrest -= commodities
+                if unrest < 0: unrest = 0
+            for town_name in state["towns"]:
+                if town_name != 'none' and town_name != 'n' and town_name != 'o' and town_name != 'e':
+                    selected_town = next((town for town in towns if town["name"] == town_name), None)
+                    if selected_town:
+                        town_unrest = selected_town["unrest"]
+                        if town_unrest > 1000 and unrest > military_power:
+                            # print("revolt type = ", selected_town["movement"])
+                            if selected_town["movement"] == 'Separatism':
+                                states, selected_town, territories = secession(state, states, selected_town, territories, population_grid)
+                                state["unrest"] -= 1000
+                            if selected_town["movement"] == 'Revolt':
+                                revolt(state, selected_town, territories, population_grid)
+                                state["unrest"] = 0
+                                state["commodities"] = 0
+                            if selected_town["movement"] == 'Bourgeois Revolution':
+                                bourgeois_revolution(state, selected_town, territories, population_grid)
+                                state["unrest"] = 0
             state["noble_growth"] = round(noble_growth, 3)
             state["commodities"] = round(commodities, 2)
             state["tax_rev"] = round(tax_rev, 2)
@@ -192,10 +251,10 @@ def display_towns(screen, font, states, overlay_width, overlay_height, overlay_x
     overlay_x += 25
     overlay_y += 10  # Move down vertically by 10 pixels
     # Calculate cell dimensions
-    cell_width = (overlay_width-70) // (len(states[0]) - 5)  # Adjusted to make room for wider "Populations" column
+    cell_width = (overlay_width-70) // (len(states[0])-6)  # Adjusted to accommodate the extra population columns
     cell_height = font_size * 1.5  # Adjust based on font size
 
-    titles = ["Name", "Towns", "Commodities", "Tax Revenue", "Populations", "Expansionism", "Military Power", "Noble Growth", "Unrest"]
+    titles = ["Name", "Towns", "Commodities", "Tax Revenue", "Populations", "Military Power", "Noble Growth", "Unrest"]
 
     filtered_states = [state for state in states if state["towns"] != 'none']
 
@@ -203,7 +262,7 @@ def display_towns(screen, font, states, overlay_width, overlay_height, overlay_x
     colors = [state["colour"] for state in filtered_states]
 
     # Exclude "status", "index", "colour", and "Capital" columns
-    states_without_status_index_colour_capital = [{key: value for key, value in state.items() if key not in ["state", "status", "index", "colour", "capital"]} for state in filtered_states]
+    states_without_status_index_colour_capital = [{key: value for key, value in state.items() if key not in ["state", "status", "index", "colour", "capital", "expansionism"]} for state in filtered_states]
 
     # Draw column titles
     for i, title in enumerate(titles):
@@ -229,6 +288,10 @@ def display_towns(screen, font, states, overlay_width, overlay_height, overlay_x
         state_modified = {key: value if key != "Towns" else towns_length for key, value in state.items()}
         state_modified["noble_growth"] = noble_growth_rounded
         state_modified["towns"] = towns_length
+        
+        # Extract population list
+        populations = state_modified["population_counts"]
+
         # Loop through state attributes and draw each cell
         for j, (_, value) in enumerate(state_modified.items()):
             # Calculate cell position
@@ -239,11 +302,16 @@ def display_towns(screen, font, states, overlay_width, overlay_height, overlay_x
             pygame.draw.rect(screen, BLACK, (cell_x, row_y, cell_width, cell_height), 1)
 
             # Render text
-            text_surface = font.render(str(value), True, BLACK)
-            text_rect = text_surface.get_rect(center=(cell_x + cell_width / 2, row_y + cell_height / 2))
+            if isinstance(value, list):  # Check if value is a list (for populations)
+                for k, population_value in enumerate(value):
+                    text_surface = font.render(str(population_value), True, BLACK)
+                    text_rect = text_surface.get_rect(center=(cell_x + (k + 0.5) * (cell_width / len(value)), row_y + cell_height / 2))
+                    screen.blit(text_surface, text_rect)
+            else:
+                text_surface = font.render(str(value), True, BLACK)
+                text_rect = text_surface.get_rect(center=(cell_x + cell_width / 2, row_y + cell_height / 2))
+                screen.blit(text_surface, text_rect)
 
-            # Blit text to screen
-            screen.blit(text_surface, text_rect)
 
 
 def expand_states(states, territories, population_grid, terrain_grid, towns):
@@ -254,7 +322,7 @@ def expand_states(states, territories, population_grid, terrain_grid, towns):
             noble_growth -= 10
             state["noble_growth"] = noble_growth
             state_index = state["index"]
-            capital_y, capital_x = state["capital"]
+            # capital_y, capital_x = state["capital"]
             # Choose a random unclaimed tile neighboring the state's territory
             unclaimed_tiles = find_unclaimed_neighbors(territories, state, terrain_grid)
             if unclaimed_tiles:
@@ -293,7 +361,6 @@ def find_unclaimed_neighbors(territories, state, terrain_grid):
     state_index = state["index"]
     # Define the directions to check for neighboring tiles (up, down, left, right)
     directions = [(0, -1), (0, 1), (-1, 0), (1, 0)]
-
 
     # Iterate over each tile in the state's territory
     for y in range(len(territories)):
@@ -349,14 +416,28 @@ def check_towns(towns, states, territories):
             town_y, town_x = town["position_y"], town["position_x"]
             if territories[town_y][town_x] == state_index:
                 town_names.append(town["name"])
-                town["state"] = state["index"]
+                town["owner"] = state["index"]
                 town["colour"] = state["colour"]
+                populations = state["population_counts"]
+                if town["owner"] != town["founder"]:
+                    town["movement"] = 'Separatism'
+                    town["unrest"] = state["unrest"]*2
+                elif town["owner"] == town["founder"] and populations[6] > populations[4]:
+                    town["movement"] = 'Bourgeois Revolution'
+                elif town["owner"] == town["founder"] and populations[4] >= populations[6]:
+                    town["movement"] = 'Revolt'
+                    town["unrest"] = state["unrest"]
         state["towns"] = town_names
 
         if not town_names:
-            state["status"] = 0
+            state["status"] = 'Primitive Accumulation'
             state["towns"] = "none"
             for y, row in enumerate(territories):
                 for x, tile in enumerate(row):
                     if tile == state_index:
                         territories[y][x] = 0
+
+        if state["name"] == 'blank':
+            names = state["towns"]
+            state["name"], position = get_name(y, x)
+            state["colour"] = get_random_color([state["colour"] for state in states])

@@ -35,7 +35,7 @@ def advance(population_grid, terrain_grid, current_tribe_location, population_ca
     size_y, size_x = terrain_grid.shape  # Get the shape of the terrain grid
     for y in range(size_y):
         for x in range(size_x):
-            population_grid, terrain_grid = simulate_population_growth(current_tribe_location, population_grid, population_caps_grid, terrain_grid, y, x)
+            population_grid, terrain_grid = simulate_population_growth(current_tribe_location, population_grid, population_caps_grid, terrain_grid, y, x, states, territories)
             population_grid, terrain_grid, towns, states, territories = simulate_population_attrition(population_grid, population_caps_grid, terrain_grid, towns, states, territories, y, x)
     # print("population grown")
     # print("population attrited")

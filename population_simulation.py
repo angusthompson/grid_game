@@ -24,6 +24,7 @@ def find_towns(population_grid, towns, states, territories, terrain_grid):
 def generate_population_grid(size_y, size_x, terrain_grid):
     population_grid = np.zeros((size_y, size_x, 8), dtype=int)
     territories = np.zeros((size_y, size_x), dtype=int)
+    print("empty population and territories grids initialised")
     towns = []
     states = []
 
@@ -32,9 +33,9 @@ def generate_population_grid(size_y, size_x, terrain_grid):
 
     # Add a placeholder state
     states.append({"name": 'blank', "state": 0, "colour": WHITE, "towns": ('none'), "commodities": 0,
-                   "tax_rev": 0, "population_counts": (0, 0, 0, 0, 0), "expansionism": 0, "military_power": 0,
-                   "noble_growth": 0, "unrest": 0, "status": 0, "index": 0, "capital": 'none'})
-
+                   "tax_rev": 0, "population_counts": (0, 0, 0, 0, 0, 0, 0, 0), "expansionism": 0, "military_power": 0,
+                   "noble_growth": 0, "unrest": 0, "status": 'Primitive Accumulation', "index": 0, "capital": 'none'})
+    print("states initialised")
     # Populate initial_population_caps_grid lazily when needed
     def get_initial_population_caps_grid():
         nonlocal initial_population_caps_grid
@@ -47,22 +48,35 @@ def generate_population_grid(size_y, size_x, terrain_grid):
                         initial_population_caps_grid[y][x] = random_integer
         return initial_population_caps_grid
 
+    print("initial pop caps grid function written")
+    time.sleep(0.5)
     # Randomly select one box for initial population
     initial_box_x = np.random.randint(20, size_x - 20)
     initial_box_y = np.random.randint(15, size_y - 15)
+    print("initial position selected")
+    time.sleep(0.5)
 
     # Ensure the selected box is a field (terrain type 2)
-    while terrain_grid[initial_box_y][initial_box_x] != 2:
+    count = 0
+    while terrain_grid[initial_box_y][initial_box_x] != 2 and count < 6:
         initial_box_x = np.random.randint(20, size_x - 20)
         initial_box_y = np.random.randint(15, size_y - 15)
+        time.sleep(0.05)
+        count += 1
+    else: terrain_grid[initial_box_y][initial_box_x] = 2
+    
+    print("initial position confirmed")
+    time.sleep(0.5)
 
     # Allocate population between 3 and 5 in the selected box
     population_grid[initial_box_y][initial_box_x][1] = np.random.randint(2, 6)
+    print("initial population allocated")
     time.sleep(0.5)
     for y in range(size_y):
         for x in range(size_x):
             population_grid[y][x][0] = sum(population_grid[y][x][1:])
 
+    print("eve's tribe created")
     return population_grid, get_initial_population_caps_grid(), towns, states, territories
 
 def initial_population_caps(terrain_grid):
@@ -92,7 +106,7 @@ def update_population_caps(initial_population_caps, terrain_grid, population_gri
                 if updated_population_caps[y][x] < 0: updated_population_caps[y][x] = 5
 
             if terrain_grid[y][x] == 5:  # Pop caps for towns
-                updated_population_caps[y][x] = 10
+                updated_population_caps[y][x] = 20
                 updated_population_caps[y][x] += 0.15 * farmer_neighbors
                 updated_population_caps[y][x] -= 0.2 * merchant_neighbors
                 updated_population_caps[y][x] -= 0.2 * hunter_neighbors
@@ -115,7 +129,7 @@ def update_population_caps(initial_population_caps, terrain_grid, population_gri
 
     return updated_population_caps
 
-def simulate_population_growth(current_tribe_location, population_grid, updated_population_caps, terrain_grid, y, x):
+def simulate_population_growth(current_tribe_location, population_grid, updated_population_caps, terrain_grid, y, x, states, territories):
     currentx, currenty = current_tribe_location
     population_neighbors, hunter_neighbors, farmer_neighbors, merchant_neighbors = get_population_neighbors(population_grid, terrain_grid, x, y)
     if updated_population_caps[y][x] < 0: updated_population_caps[y][x] = 5
@@ -146,13 +160,26 @@ def simulate_population_growth(current_tribe_location, population_grid, updated_
                 population_grid[y][x][3] += population_grid[y][x][3]*0.1
                 population_grid[y][x][3] += 0.1 * farmer_neighbors
                 population_grid[y][x][3] -= 0.1 * merchant_neighbors
-                    
+                # population_grid[y][x][5] += 0.2 * farmer_neighbors
+                # population_grid[y][x][5] += population_grid[y][x][5]
+                # population_grid[y][x][6] += 0.1 * population_grid[y][x][4]
+                # population_grid[y][x][6] += 0.1 * population_grid[y][x][5]
+                # population_grid[y][x][4] -= 0.1 * population_grid[y][x][6]
+
+                if territories[y][x] != 0:
+                    n = territories[y][x]
+                    state = states[n-1]
+                    if state["commodities"] < -10 and population_grid[y][x][3] > 4 and random.randint(1, 20) > 15:
+                        population_grid[y][x][3] -= 4
+                        population_grid[y][x][5] += 3
+                        population_grid[y][x][6] += 1
+
     if population_grid[y][x][1] < 0:
         population_grid[y][x][1] = 0
     if population_grid[y][x][2] < 0:
         population_grid[y][x][2] = 0
     if population_grid[y][x][3] < 0:
-        population_grid[y][x][3] =0
+        population_grid[y][x][3] = 0
 
     if population_grid[currenty][currentx][0] < 3:
         population_grid[currenty][currentx][1] = 3
@@ -244,7 +271,7 @@ def terrain_development(terrain_grid, population_grid, updated_population_caps, 
         population_grid[y][x][3] += 5
         population_grid[y][x][2] -= 6
         name, position = get_name(y, x)
-        towns.append({"name": name, "position_x": x, "position_y": y, "state": 1, "colour": (0,0,0)})
+        towns.append({"name": name, "position_x": x, "position_y": y, "colour": (0,0,0), "founder": 0, "owner": 0, "movement": 'Revolt', "unrest": 0})
         find_towns(population_grid, towns, states, territories, terrain_grid)
 
     if terrain_grid[y][x] == 1 and population_grid[y][x][0] > 5:                #Seas can't be overpopulated

@@ -60,7 +60,7 @@ def get_population_neighbors(population_grid, grid, x, y):
 def get_name(y, x):
     prefixes = ['Port','Fort','San','Saint','Inver','Dun','Mont', 'Monte', 'Kil','New ','Nov','Novo','Nowy','New','Stara','Stary','Nan','Yan','Qing']
     names = ['buck','guang','storn','marn','kyot','der','luck','ber','lin','par','rom','bei','piet','mos','stan','sevast','then','mad','edin','']
-    capitalised_names = ['Buck','Guang','Storn','Marn','Kyot','Der','Luck','Ber','Lin','Par','Rom','Bei','Piet','Mos','Stan','Sevas','Then','Mad','Edin']
+    capitalised_names = ['Buck','Guang','Storn','Marn','Kyot','Der','Luck','Ber','Lin','Par','Rom','Bei','Piet','Mos','Stan','Sevast','Then','Mad','Edin']
     suffixes = ['ock','och','gorod','grad','burg','berg','bourg','ness','burgh','borough','zhou','gard','to','ople','insk','ovsk','stead','ham','opol','now','zuma', '']
     random_prefix = random.choice(prefixes)
     random_name = random.choice(names)
