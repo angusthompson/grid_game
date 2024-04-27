@@ -3,7 +3,7 @@ import random
 
 def generate_terrain_grid(size_x, size_y, num_iterations=5):
     # Generate initial terrain grid separately for x and y axes
-    terrain_grid = np.random.choice([1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4], size=(size_y, size_x))
+    terrain_grid = np.random.choice([1, 1, 1, 1, 2, 2, 2, 2, 9, 9, 9, 3, 3, 4, 4], size=(size_y, size_x))
     
     # Apply clustering algorithm
     for _ in range(num_iterations):
@@ -20,12 +20,26 @@ def update_terrain_grid(terrain_grid):
             neighbors = get_neighbors(terrain_grid, x, y)
             most_common_neighbor = max(set(neighbors), key=neighbors.count)
             random_integer = random.randint(0, 10)
-            if y == len(terrain_grid)-1 or y == 0:
-                new_terrain_grid[y][x] = 8  
-            elif random_integer > 2:
-                new_terrain_grid[y][x] = most_common_neighbor   
-            else:
+            
+            equator =  len(terrain_grid)/2
+            # if y - equator < 8 and y - equator > -8:
+            #     if terrain_grid[y][x] == 2 and random_integer > 4:              #Generate forests
+            #         terrain_grid[y][x] = 9
+
+            if y - equator < 2 and y - equator > -2:
+                if terrain_grid[y][x] == 2 or terrain_grid[y][x] == 2:          #Generate equatorial deserts
+                    if random_integer > 4:
+                        terrain_grid[y][x] = 4
+
+            if y == len(terrain_grid)-1 or y == 0:                              #Generate ice caps
+                new_terrain_grid[y][x] = 8
+
+            if random_integer > 3 and y != len(terrain_grid)-1 and y != 0:      #Cluster terrain
+                new_terrain_grid[y][x] = most_common_neighbor
+
+            elif y != len(terrain_grid)-1 and y != 0:
                 new_terrain_grid[y][x] = terrain_grid[y][x]
+
     return new_terrain_grid
 
 # Function to get neighbors of a cell

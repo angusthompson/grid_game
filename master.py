@@ -7,9 +7,9 @@ import time
 from ui import draw_button, is_hover, display_population_info, counters
 from population_simulation import generate_population_grid, initial_population_caps, update_population_caps, simulate_population_growth, generate_road_grid
 from terrain_generation import generate_terrain_grid
-from graphics import draw_terrain, determine_terrain_color, draw_terrain_and_population, draw_road_overlay, draw_tribe_location, borders, draw_towns_overlay
+from graphics import draw_terrain, determine_terrain_color, draw_terrain_and_population, draw_road_overlay, draw_tribe_location, borders, draw_towns_overlay, player_decisions_overlay, draw_beach_lines
 from primitive_movement import move_population_up, move_population_down, move_population_left, move_population_right, find_starting_location, convert_to_farmers
-from controls import move_down, move_left, move_right, move_up, advance, convert_to_farmers_button
+from controls import move_down, move_left, move_right, move_up, advance, convert_to_farmers_button, claim_state_button
 from economy import borders, draw_territory_borders, count_population_by_state, draw_economy_overlay
 from parameters import cell_height, cell_size, cell_width, x_size, y_size, WHITE, BLACK, GRAY, LIGHT_GRAY, DARK_GRAY, GREEN, UI_WIDTH, WINDOW_WIDTH, WINDOW_HEIGHT, UI_HEIGHT, UI_POSITION, BUTTON_HEIGHT, BUTTON_WIDTH, BUTTON_MARGIN, GRID_WIDTH, GRID_HEIGHT
 
@@ -30,6 +30,7 @@ border_overlay_visible = False
 names_overlay_visible = False
 economy_overlay_visible = False
 towns_overlay_visible = False
+player_options_visible = False
 
 # Main game loop
 def main():
@@ -57,6 +58,7 @@ def main():
     global names_overlay_visible
     global economy_overlay_visible
     global towns_overlay_visible
+    global player_options_visible
 
     # Calculate cell sizes based on the dimensions of the window and terrain grid
     cell_width = (WINDOW_WIDTH - UI_WIDTH) // x_size
@@ -66,7 +68,7 @@ def main():
     GRID_WIDTH = cell_width*x_size
     GRID_HEIGHT = cell_height*y_size
 
-    button_labels = ['^', 'v', '<-', '->','S','-','-','-','Borders','Names','Economies','Towns','-','-','-','-']
+    button_labels = ['^', 'v', '<-', '->','S','C','-','-','Borders','Names','Economies','Towns','Policies','-','-','-']
 
     current_tribe_location = (0, 0)
     current_tribe_location = find_starting_location(population_grid)
@@ -84,9 +86,14 @@ def main():
 
         # Draw UI
         pygame.draw.rect(game_display, GRAY, (UI_POSITION[0], UI_POSITION[1], UI_WIDTH, UI_HEIGHT))
+        menu_image = pygame.transform.scale(pygame.image.load('assets/ui_background_5.png'), (180, 685))
+        game_display.blit(menu_image, (UI_POSITION[0], UI_POSITION[1], UI_WIDTH, UI_HEIGHT))
 
         # Draw terrain
         draw_terrain_and_population(terrain_grid, population_grid, cell_size)
+
+        draw_beach_lines(terrain_grid, cell_size, game_display)
+
 
         advance_button_rect = pygame.Rect(UI_POSITION[0] + 10, UI_HEIGHT - BUTTON_HEIGHT - 10, BUTTON_WIDTH * 3.8 + BUTTON_MARGIN, BUTTON_HEIGHT)
         button_1_rect = pygame.Rect(UI_POSITION[0] + 10, UI_POSITION[1] + 10, BUTTON_WIDTH, BUTTON_HEIGHT)
@@ -94,10 +101,13 @@ def main():
         button_3_rect = pygame.Rect(UI_POSITION[0] + 10, UI_POSITION[1] + 10 + (BUTTON_HEIGHT + BUTTON_MARGIN) * 2, BUTTON_WIDTH, BUTTON_HEIGHT)
         button_4_rect = pygame.Rect(UI_POSITION[0] + 10, UI_POSITION[1] + 10 + (BUTTON_HEIGHT + BUTTON_MARGIN) * 3, BUTTON_WIDTH, BUTTON_HEIGHT)
         button_5_rect = pygame.Rect(UI_POSITION[0] + 10, UI_POSITION[1] + 10 + (BUTTON_HEIGHT + BUTTON_MARGIN) * 4, BUTTON_WIDTH, BUTTON_HEIGHT)
+        button_6_rect = pygame.Rect(UI_POSITION[0] + 10, UI_POSITION[1] + 10 + (BUTTON_HEIGHT + BUTTON_MARGIN) * 5, BUTTON_WIDTH, BUTTON_HEIGHT)
+
         button_10_rect = pygame.Rect(UI_POSITION[0] + 10 + (BUTTON_HEIGHT + BUTTON_MARGIN), UI_POSITION[1] + 10, BUTTON_WIDTH*2, BUTTON_HEIGHT)
         button_11_rect = pygame.Rect(UI_POSITION[0] + 10 + (BUTTON_HEIGHT + BUTTON_MARGIN), UI_POSITION[1] + 10 + (BUTTON_HEIGHT + BUTTON_MARGIN), BUTTON_WIDTH*2, BUTTON_HEIGHT)
         button_12_rect = pygame.Rect(UI_POSITION[0] + 10 + (BUTTON_HEIGHT + BUTTON_MARGIN), UI_POSITION[1] + 10 + (BUTTON_HEIGHT + BUTTON_MARGIN) * 2, BUTTON_WIDTH*2, BUTTON_HEIGHT)
         button_13_rect = pygame.Rect(UI_POSITION[0] + 10 + (BUTTON_HEIGHT + BUTTON_MARGIN), UI_POSITION[1] + 10 + (BUTTON_HEIGHT + BUTTON_MARGIN) * 3, BUTTON_WIDTH*2, BUTTON_HEIGHT)
+        button_14_rect = pygame.Rect(UI_POSITION[0] + 10 + (BUTTON_HEIGHT + BUTTON_MARGIN), UI_POSITION[1] + 10 + (BUTTON_HEIGHT + BUTTON_MARGIN) * 4, BUTTON_WIDTH*2, BUTTON_HEIGHT)
 
         mouse_x, mouse_y = pygame.mouse.get_pos()
 
@@ -126,6 +136,9 @@ def main():
                     population_grid, terrain_grid, current_tribe_location, population_caps_grid, road_grid, turn_counter, towns, states, territories = move_right(population_grid, terrain_grid, current_tribe_location, population_caps_grid, initial_population_caps_grid, turn_counter, towns, states, territories)
                 elif is_hover(pygame.mouse.get_pos(), button_5_rect):
                     population_grid, terrain_grid, population_caps_grid, road_grid, turn_counter, stage, towns, states, territories = convert_to_farmers_button(population_grid, terrain_grid, current_tribe_location, population_caps_grid, initial_population_caps_grid, turn_counter, stage, towns, states, territories)
+                elif is_hover(pygame.mouse.get_pos(), button_6_rect):
+                    claim_state_button()
+
                 elif is_hover(pygame.mouse.get_pos(), button_10_rect):
                     border_overlay_visible = not border_overlay_visible
                 elif is_hover(pygame.mouse.get_pos(), button_11_rect):
@@ -134,6 +147,8 @@ def main():
                     economy_overlay_visible = not economy_overlay_visible
                 elif is_hover(pygame.mouse.get_pos(), button_13_rect):
                     towns_overlay_visible = not towns_overlay_visible
+                elif is_hover(pygame.mouse.get_pos(), button_14_rect):
+                    player_options_visible = not player_options_visible
             elif event.type == pygame.KEYDOWN:
                 # Check for keyboard input
                 if event.key == pygame.K_UP:
@@ -150,7 +165,9 @@ def main():
                     population_grid, terrain_grid, current_tribe_location, population_caps_grid, road_grid, turn_counter, towns, states, territories = advance(population_grid, terrain_grid, current_tribe_location, population_caps_grid, initial_population_caps_grid, turn_counter, towns, states, territories)
                 elif event.key == pygame.K_s:
                     population_grid, terrain_grid, population_caps_grid, road_grid, turn_counter, stage, towns, states, territories = convert_to_farmers_button(population_grid, terrain_grid, current_tribe_location, population_caps_grid, initial_population_caps_grid, turn_counter, stage, towns, states, territories)
-                        
+                elif event.key == pygame.K_s:
+                    claim_state_button()
+    
         # Draw buttons
         button_positions = []
         for i in range(16):  # Increased number of buttons
@@ -192,7 +209,6 @@ def main():
         territory_colors = borders(territories, states)
         draw_territory_borders(territories, states, territory_colors, game_display, cell_size)
         count_population_by_state(territories, population_grid, states)
-        # display_towns(game_display, pygame.font.Font(None, 20), states)
 
         if names_overlay_visible:
             for town_info in towns:
@@ -231,6 +247,9 @@ def main():
 
         if towns_overlay_visible:
             draw_towns_overlay(game_display, towns)
+
+        if player_options_visible:
+            player_decisions_overlay(game_display, towns)
 
         # Update the display
         pygame.display.flip()

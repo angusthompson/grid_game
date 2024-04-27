@@ -43,7 +43,7 @@ def generate_population_grid(size_y, size_x, terrain_grid):
             initial_population_caps_grid = np.zeros((size_y, size_x))
             for y in range(size_y):
                 for x in range(size_x):
-                    if terrain_grid[y][x] == 2:  # Field tile
+                    if terrain_grid[y][x] == 2 or terrain_grid[y][x] == 9:  # Field tile
                         random_integer = np.random.randint(5, 11)
                         initial_population_caps_grid[y][x] = random_integer
         return initial_population_caps_grid
@@ -83,7 +83,7 @@ def initial_population_caps(terrain_grid):
     population_caps = np.zeros_like(terrain_grid)
     for y in range(len(terrain_grid)):
         for x in range(len(terrain_grid[y])):
-            if terrain_grid[y][x] == 2:  # Field tile
+            if terrain_grid[y][x] == 2 or terrain_grid[y][x] == 9:  # Field tile
                 population_caps[y][x] = np.random.randint(10, 21)
     return population_caps
 
@@ -99,7 +99,7 @@ def update_population_caps(initial_population_caps, terrain_grid, population_gri
             farmland_count = np.count_nonzero(terrain_grid[max(0, y - 1):min(size_y, y + 2), max(0, x - 1):min(size_x, x + 2)] == 6)
             town_count = np.count_nonzero(terrain_grid[max(0, y - 1):min(size_y, y + 2), max(0, x - 1):min(size_x, x + 2)] == 5)
 
-            if terrain_grid[y][x] == 2 and hunter_neighbors > 1:  # Pop caps for fields
+            if terrain_grid[y][x] == 2 and hunter_neighbors > 1 or terrain_grid[y][x] == 9 and hunter_neighbors > 1:  # Pop caps for fields
                 updated_population_caps[y][x] -= 1 * hunter_neighbors
                 updated_population_caps[y][x] -= 0.3 * farmer_neighbors
                 updated_population_caps[y][x] -= 0.3 * merchant_neighbors
@@ -141,7 +141,7 @@ def simulate_population_growth(current_tribe_location, population_grid, updated_
         pop_cap = updated_population_caps[y][x]
 
         if population_grid[y][x][0] > 0:    # Mechanics for pop growth
-            if terrain_grid[y][x] == 2:            # Growth in fields
+            if terrain_grid[y][x] == 2 or terrain_grid[y][x] == 9:            # Growth in fields
                 population_grid[y][x][1] += population_grid[y][x][1]*0.5
                 if population_grid[y][x][0] < 5:
                     population_grid[y][x][1] += 1
@@ -252,7 +252,7 @@ def simulate_population_attrition(population_grid, updated_population_caps, terr
 
 def terrain_development(terrain_grid, population_grid, updated_population_caps, towns, states, territories, y, x):
     settlement_decision = np.random.randint(0, 20)
-    if terrain_grid[y][x] == 2 and population_grid[y][x][2] > 0:                #Farmers colonise new land         
+    if terrain_grid[y][x] == 2 and population_grid[y][x][2] > 0 or terrain_grid[y][x] == 9 and population_grid[y][x][2] > 0:                #Farmers colonise new land         
         if settlement_decision + population_grid[y][x][2] > 15: terrain_grid[y][x] = 6
     if population_grid[y][x][1] > 19 and terrain_grid[y][x] == 2:              #Decision for AI hunter-gatherers to become farmers
         if settlement_decision > 13:

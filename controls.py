@@ -59,3 +59,6 @@ def convert_to_farmers_button(population_grid, terrain_grid, current_tribe_locat
     # stage += 1
     population_grid, terrain_grid, current_tribe_location, population_caps_grid, road_grid, turn_counter, towns, states, territories= advance(population_grid, terrain_grid, current_tribe_location, population_caps_grid, initial_population_caps_grid, turn_counter, towns, states, territories)
     return population_grid, terrain_grid, population_caps_grid, road_grid, turn_counter, stage, towns, states, territories
+
+def claim_state_button(territories, states, current_tribe_location):
+    print("State Claimed")

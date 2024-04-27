@@ -15,10 +15,6 @@ DARK_GRAY = (150, 150, 150)
 GREEN = (0, 255, 0)
 
 # Define sizes and positions for UI elements
-UI_WIDTH = 180
-WINDOW_WIDTH = 1450  # Increased width
-WINDOW_HEIGHT = 800
-UI_HEIGHT = WINDOW_HEIGHT
 UI_POSITION = (WINDOW_WIDTH - UI_WIDTH, 0)
 BUTTON_WIDTH = 50  # Narrower buttons
 BUTTON_HEIGHT = 50

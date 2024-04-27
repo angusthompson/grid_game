@@ -138,7 +138,6 @@ def count_population_by_state(territories, population_grid, states):
 def draw_economy_overlay(screen, states):
     # Get the dimensions of the game display
     display_width, display_height = screen.get_size()
-
     # Define the dimensions of the overlay rectangle
     overlay_width = display_width - 200  # Reduce width by 20 pixels
     overlay_height = display_height - 30  # Reduce height by 20 pixels
@@ -183,7 +182,7 @@ def commodities(states, territories, population_grid, terrain_grid, towns):
             bourgeois_population = populations[6]
 
             # Commodity Production and consumption
-            commodities += merchant_population * 1
+            commodities += merchant_population * 2
             commodities += proletarian_population * 5
             commodities -= noble_population * 7
             commodities -= bourgeois_population * 15
@@ -217,7 +216,7 @@ def commodities(states, territories, population_grid, terrain_grid, towns):
                 # military_power += tax_rev
                 unrest += (-commodities)
             if commodities > 0 and unrest > 0:
-                unrest -= commodities
+                unrest -= commodities*0.2
                 if unrest < 0: unrest = 0
             for town_name in state["towns"]:
                 if town_name != 'none' and town_name != 'n' and town_name != 'o' and town_name != 'e':
@@ -228,7 +227,8 @@ def commodities(states, territories, population_grid, terrain_grid, towns):
                             # print("revolt type = ", selected_town["movement"])
                             if selected_town["movement"] == 'Separatism':
                                 states, selected_town, territories = secession(state, states, selected_town, territories, population_grid)
-                                state["unrest"] -= 1000
+                                # state["unrest"] -= 1000
+                                state["unrest"] = 0
                             if selected_town["movement"] == 'Revolt':
                                 revolt(state, selected_town, territories, population_grid)
                                 state["unrest"] = 0
@@ -331,7 +331,7 @@ def expand_states(states, territories, population_grid, terrain_grid, towns):
                 x, y = chosen_tile
                 population_grid[y][x][4] += 1
                 territories[y][x] = state_index
-                state["commodities"] += 100
+                state["commodities"] += 1000
             elif foreign_neighbors := find_foreign_neighbors(territories, state, terrain_grid, states, towns):
                 # If there are no unclaimed tiles but there are foreign neighbors, claim the foreign state's land
                 foreign_neighbors.sort(key=lambda neighbor: neighbor[2])  # Sort by military power (index 2)
@@ -346,7 +346,7 @@ def expand_states(states, territories, population_grid, terrain_grid, towns):
                         territories[y][x] = state_index
                         state["military_power"] -= states[neighbor_state_index]["military_power"]
                         states[neighbor_state_index]["military_power"] = 0
-                        state["commodities"] += 100
+                        state["commodities"] += 1000
                         neighbor_state = states[neighbor_state_index - 1]
                 elif neighbor_state_index == len(states): pass
                 else:
