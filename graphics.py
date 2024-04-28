@@ -3,7 +3,8 @@ import random
 import math
 import noise
 import numpy as np
-from parameters import cell_height, cell_size, cell_width, x_size, y_size, WHITE, BLACK, GRAY, LIGHT_GRAY, DARK_GRAY, GREEN, UI_WIDTH, WINDOW_WIDTH, WINDOW_HEIGHT, UI_HEIGHT, UI_POSITION, BUTTON_HEIGHT, BUTTON_MARGIN, GRID_WIDTH, GRID_HEIGHT
+import pygame_widgets
+from parameters import cell_height, cell_size, cell_width, x_size, y_size, WHITE, BLACK, GRAY, LIGHT_GRAY, DARK_GRAY, GREEN, UI_WIDTH, WINDOW_WIDTH, WINDOW_HEIGHT, UI_HEIGHT, UI_POSITION, BUTTON_HEIGHT, BUTTON_MARGIN, GRID_WIDTH, GRID_HEIGHT, variable
 WINDOW_SIZE = (WINDOW_WIDTH, WINDOW_HEIGHT)
 game_display = pygame.display.set_mode(WINDOW_SIZE)
 
@@ -13,14 +14,11 @@ terrain_images = {
     2: pygame.transform.scale(pygame.image.load('assets/grass2.png'), (cell_size, cell_size)),
     3: pygame.transform.scale(pygame.image.load('assets/mountain2.png'), (cell_size, cell_size)),
     4: pygame.transform.scale(pygame.image.load('assets/desert2.png'), (cell_size, cell_size)),
-    5: pygame.transform.scale(pygame.image.load('assets/town2.png'), (cell_size, cell_size)),
-    6: pygame.transform.scale(pygame.image.load('assets/farmland2.png'), (cell_size, cell_size)),
+    5: pygame.transform.scale(pygame.image.load('assets/town4.png'), (cell_size, cell_size)),
+    6: pygame.transform.scale(pygame.image.load('assets/farmland5.png'), (cell_size, cell_size)),
     8: pygame.transform.scale(pygame.image.load('assets/ice3.png'), (cell_size, cell_size)),
     9: pygame.transform.scale(pygame.image.load('assets/forest4.png'), (cell_size, cell_size)),
-
-    # Add more terrain images as needed
 }
-
 
 # Define colors
 BLUE = (0, 0, 255)
@@ -36,6 +34,7 @@ DARK_GREY = ((64, 128, 128))
 DARK_GREY = ((32, 128, 128))
 RED = (255, 80, 80)
 TRANSLUCENT_RED = (255, 0, 0, 64)  # Semi-transparent red (alpha = 128)
+PUREPLE = (160, 32, 240)
 
 # Define constants
 # GRID_SIZE = 60
@@ -47,7 +46,7 @@ BUTTON_TEXT_COLOR = (0, 0, 0)
 BUTTON_TEXT_HOVER_COLOR = (255, 255, 255)
 # Assuming these constants are defined in your code
 PURPLE = (128, 0, 128)
-TILE_SIZE = 12  # Adjust this value as per your tile size, make sure to also adjust in 'ui' module.
+TILE_SIZE = 12  # Adjust this value as per your tile size, make sure to also adjust in 'ui' module.s
 
 
 # Function to draw terrain
@@ -142,7 +141,7 @@ def draw_tribe_location(current_tribe_location, cell_size):
 
 from ui import GRID_WIDTH, GRID_HEIGHT, cell_size
 
-def borders(terrain_grid, population_grid, town_positions, cell_size, game_display):
+def borders(terrain_grid, population_grid, town_positions, cell_size, game_display, states):
     # Create a surface for the translucent overlay
     translucent_surface = pygame.Surface((GRID_WIDTH, GRID_HEIGHT), pygame.SRCALPHA)
 
@@ -265,7 +264,9 @@ def display_towns_only(screen, font, towns, overlay_width, overlay_height, overl
     else:
         pass
 
-def player_decisions_overlay(screen, towns):
+
+
+def player_decisions_overlay(screen, towns, slider_position, variable):
     # Get the dimensions of the game display
     display_width, display_height = screen.get_size()
 
@@ -286,6 +287,40 @@ def player_decisions_overlay(screen, towns):
 
     # Draw the black border
     pygame.draw.rect(screen, black, (overlay_x, overlay_y, overlay_width, overlay_height), 3)
+
+    # Draw the slider background
+    slider_rect = pygame.Rect(overlay_x + 20, overlay_y + 20, overlay_width - 40, 20)
+    pygame.draw.rect(screen, GREY, slider_rect)
+
+    # Draw the slider bar
+    slider_bar_width = overlay_width - 60
+    slider_bar_height = 10
+    slider_bar_rect = pygame.Rect(overlay_x + 30, overlay_y + 25, slider_bar_width, slider_bar_height)
+    pygame.draw.rect(screen, (0, 0, 0), slider_bar_rect)
+
+    # Calculate slider position based on some parameter
+    parameter_value = slider_position / slider_bar_width if slider_position <= slider_bar_width else 1.0
+    slider_pos = overlay_x + 30 + parameter_value * slider_bar_width
+
+    # Draw the slider knob
+    slider_knob_radius = 10
+    pygame.draw.circle(screen, (0, 0, 255), (int(slider_pos), overlay_y + 30), slider_knob_radius)
+
+    # Handle slider movement
+    mouse_x, mouse_y = pygame.mouse.get_pos()
+    mouse_clicked = pygame.mouse.get_pressed()[0]
+
+    if slider_rect.collidepoint(mouse_x, mouse_y) and mouse_clicked:
+        # Calculate new slider position based on mouse x coordinate
+        new_slider_pos = mouse_x - overlay_x - 30
+        slider_position = max(0, min(new_slider_pos, slider_bar_width))  # Clamp within slider bounds
+
+        # Update slider position based on parameter value
+        # slider_position = int(new_slider_pos / slider_bar_width * 100)  # Assuming slider_position ranges from 0 to 100
+    
+    variable = slider_position
+    return slider_position, variable
+
 
 # Function to detect sea borders
 def detect_sea_borders(terrain_grid):

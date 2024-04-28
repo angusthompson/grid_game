@@ -34,7 +34,7 @@ def generate_population_grid(size_y, size_x, terrain_grid):
     # Add a placeholder state
     states.append({"name": 'blank', "state": 0, "colour": WHITE, "towns": ('none'), "commodities": 0,
                    "tax_rev": 0, "population_counts": (0, 0, 0, 0, 0, 0, 0, 0), "expansionism": 0, "military_power": 0,
-                   "noble_growth": 0, "unrest": 0, "status": 'Primitive Accumulation', "index": 0, "capital": 'none'})
+                   "noble_growth": 0, "unrest": 0, "status": 'Primitive Accumulation', "index": 0, "capital": 'none', "player": 'No', "taxes": (0, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1)})
     print("states initialised")
     # Populate initial_population_caps_grid lazily when needed
     def get_initial_population_caps_grid():

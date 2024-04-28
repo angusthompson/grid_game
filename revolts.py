@@ -31,8 +31,8 @@ def secession(state, states, town, territories, population_grid):
     population_counts = [0, 1, 1, 1, 1, 0, 0, 0]
     index = town["founder"]
     # Add new state 
-    new_state = {"name": single_name, "state": index, "colour": colour, "towns": names_list, "commodities": 0, "tax_rev": 0, "population_counts": population_counts, "expansionism": 0, "military_power": 300, "noble_growth": 0, "unrest": 0, "status": 'Primitive Accumulation', "index": index, "capital": (y, x)}
-    states.append({"name": single_name, "state": index, "colour": colour, "towns": names_list, "commodities": 0, "tax_rev": 0, "population_counts": population_counts, "expansionism": 0, "military_power": 300, "noble_growth": 0, "unrest": 0, "status": 'Primitive Accumulation', "index": index, "capital": (y, x)})
+    new_state = {"name": single_name, "state": index, "colour": colour, "towns": names_list, "commodities": 0, "tax_rev": 0, "population_counts": population_counts, "expansionism": 0, "military_power": 300, "noble_growth": 0, "unrest": 0, "status": 'Primitive Accumulation', "index": index, "capital": (y, x), "player": 'No', "taxes": (0, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1)}
+    states.append({"name": single_name, "state": index, "colour": colour, "towns": names_list, "commodities": 0, "tax_rev": 0, "population_counts": population_counts, "expansionism": 0, "military_power": 300, "noble_growth": 0, "unrest": 0, "status": 'Primitive Accumulation', "index": index, "capital": (y, x), "player": 'No', "taxes": (0, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1)})
     test_capital = new_state["capital"]
     town["owner"] = town["founder"]
     town["colour"] = colour

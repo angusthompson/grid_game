@@ -1,7 +1,7 @@
 from terrain_generation import get_name
 from graphics import get_random_color
 import pygame
-from parameters import WHITE, BLACK, GRAY, LIGHT_GRAY, DARK_GRAY, GREEN, UI_WIDTH, WINDOW_WIDTH, WINDOW_HEIGHT, UI_HEIGHT, UI_POSITION, BUTTON_HEIGHT, BUTTON_MARGIN, x_size, y_size, cell_size, cell_width, cell_height, GRID_WIDTH, GRID_HEIGHT
+from parameters import WHITE, BLACK, GRAY, LIGHT_GRAY, DARK_GRAY, GREEN, UI_WIDTH, WINDOW_WIDTH, WINDOW_HEIGHT, UI_HEIGHT, UI_POSITION, BUTTON_HEIGHT, BUTTON_MARGIN, x_size, y_size, cell_size, cell_width, cell_height, GRID_WIDTH, GRID_HEIGHT, PURPLE, variable
 import random
 from revolts import revolt, bourgeois_revolution, secession
 
@@ -13,7 +13,7 @@ def generate_state(i, town, x, y, states, territories, terrain_grid):
     population_counts = [0, 0, 0, 0, 0, 0, 0, 0]
     index = len(states)
     # new_state = {"name": single_name, "state": i, "colour": colour, "towns": names_list, "commodities": 0, "tax_rev": 0, "population_counts": population_counts, "expansionism": 0, "military_power": 0, "noble_growth": 0, "unrest": 0, "status": 1, "index": index, "capital": (y, x)}
-    states.append({"name": single_name, "state": i, "colour": colour, "towns": names_list, "commodities": 0, "tax_rev": 0, "population_counts": population_counts, "expansionism": 0, "military_power": 0, "noble_growth": 0, "unrest": 0, "status": 'Primitive Accumulation', "index": index, "capital": (y, x)})
+    states.append({"name": single_name, "state": i, "colour": colour, "towns": names_list, "commodities": 0, "tax_rev": 0, "population_counts": population_counts, "expansionism": 0, "military_power": 0, "noble_growth": 0, "unrest": 0, "status": 'Primitive Accumulation', "index": index, "capital": (y, x), "player": 'No', "taxes": (0, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1)})
     # print(new_state)
     if town["founder"] == 0:
         town["founder"] = index
@@ -71,12 +71,18 @@ def borders(territories, states):
     return territory_colors
 
 def draw_territory_borders(territories, states, territory_colors, game_display, cell_size):
+    player_ownership = -1
     for y in range(len(territories)):
-        for x in range(len(territories[y])):
+        for x in range(len(territories[y])):            #Going through each tile
             current_territory = territories[y][x]
-            current_state_index = current_territory - 1
-            # current_state_color = states[current_state_index]["colour"]
-            current_state_color = (0, 0, 0)
+            current_state = states[current_territory - 1]
+
+            if current_state["player"] == 'Yes':
+                current_state_color = current_state["colour"]
+                player_ownership = current_territory
+            else: 
+                current_state_color = BLACK
+
             # Check neighboring cells
             above = (y-1, x)
             below = (y+1, x)
@@ -85,22 +91,22 @@ def draw_territory_borders(territories, states, territory_colors, game_display, 
             ny, nx = above
             if 0 <= ny < len(territories) and 0 <= nx < len(territories[0]):
                 neighbor_territory = territories[ny][nx]
-                if neighbor_territory != current_territory:
+                if neighbor_territory != current_territory and neighbor_territory != player_ownership:
                     pygame.draw.line(game_display, current_state_color, (x * cell_size, y * cell_size), ((x + 1) * cell_size, y * cell_size), 2)
             ny, nx = below
             if 0 <= ny < len(territories) and 0 <= nx < len(territories[0]):
                 neighbor_territory = territories[ny][nx]
-                if neighbor_territory != current_territory:
+                if neighbor_territory != current_territory and neighbor_territory != player_ownership:
                     pygame.draw.line(game_display, current_state_color, (x * cell_size, (y + 1) * cell_size), ((x + 1) * cell_size, (y + 1) * cell_size), 2)
             ny, nx = left
             if 0 <= ny < len(territories) and 0 <= nx < len(territories[0]):
                 neighbor_territory = territories[ny][nx]
-                if neighbor_territory != current_territory:
+                if neighbor_territory != current_territory and neighbor_territory != player_ownership:
                     pygame.draw.line(game_display, current_state_color, (x * cell_size, y * cell_size), (x * cell_size, (y + 1) * cell_size), 2)
             ny, nx = right
             if 0 <= ny < len(territories) and 0 <= nx < len(territories[0]):
                 neighbor_territory = territories[ny][nx]
-                if neighbor_territory != current_territory:
+                if neighbor_territory != current_territory and neighbor_territory != player_ownership:
                     pygame.draw.line(game_display, current_state_color, ((x + 1) * cell_size, y * cell_size), ((x + 1) * cell_size, (y + 1) * cell_size), 2)
 
 
@@ -159,13 +165,14 @@ def draw_economy_overlay(screen, states):
     display_towns(screen, pygame.font.Font(None, 20), states, overlay_width, overlay_height, overlay_x, overlay_y)
 
 
-def commodities(states, territories, population_grid, terrain_grid, towns):
-    taxes = (0, 0, 0.1, 0.1, 0.1, 0.1, 0.1)             # Tax rates on full population, hunter-gatherers, farmers, mechants, nobles, etc.
+def commodities(states, territories, population_grid, terrain_grid, towns, variable):
     if len(states) > 0:
         for state in states:
+            state = get_taxes(state, variable)
             populations = state["population_counts"]
             commodities = state["commodities"]
             noble_growth = state["noble_growth"]
+            taxes = state["taxes"]             # Tax rates on full population, hunter-gatherers, farmers, mechants, nobles, etc.
             tax_rev = state["tax_rev"]
             expansionism = state["expansionism"]
             military_power = state["military_power"]
@@ -251,7 +258,7 @@ def display_towns(screen, font, states, overlay_width, overlay_height, overlay_x
     overlay_x += 25
     overlay_y += 10  # Move down vertically by 10 pixels
     # Calculate cell dimensions
-    cell_width = (overlay_width-70) // (len(states[0])-6)  # Adjusted to accommodate the extra population columns
+    cell_width = (overlay_width-70) // (len(states[0])-7)  # Adjusted to accommodate the extra population columns
     cell_height = font_size * 1.5  # Adjust based on font size
 
     titles = ["Name", "Towns", "Commodities", "Tax Revenue", "Populations", "Military Power", "Noble Growth", "Unrest"]
@@ -262,7 +269,7 @@ def display_towns(screen, font, states, overlay_width, overlay_height, overlay_x
     colors = [state["colour"] for state in filtered_states]
 
     # Exclude "status", "index", "colour", and "Capital" columns
-    states_without_status_index_colour_capital = [{key: value for key, value in state.items() if key not in ["state", "status", "index", "colour", "capital", "expansionism"]} for state in filtered_states]
+    states_without_status_index_colour_capital = [{key: value for key, value in state.items() if key not in ["state", "status", "index", "colour", "capital", "expansionism", "player", "taxes"]} for state in filtered_states]
 
     # Draw column titles
     for i, title in enumerate(titles):
@@ -441,3 +448,14 @@ def check_towns(towns, states, territories):
             names = state["towns"]
             state["name"], position = get_name(y, x)
             state["colour"] = get_random_color([state["colour"] for state in states])
+
+
+
+def get_taxes(state, variable):
+    if state["player"] == 'Yes':
+        taxes = list(state["taxes"])  # Convert taxes tuple to a list
+        income_tax = variable / 1000
+        for n in range(len(taxes)):
+            taxes[n] = income_tax
+        state["taxes"] = taxes  # Assign the modified taxes list back to the state dictionary
+    return state
