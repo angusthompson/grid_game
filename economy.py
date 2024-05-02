@@ -1,7 +1,7 @@
 from terrain_generation import get_name
 from graphics import get_random_color
 import pygame
-from parameters import WHITE, BLACK, GRAY, LIGHT_GRAY, DARK_GRAY, GREEN, UI_WIDTH, WINDOW_WIDTH, WINDOW_HEIGHT, UI_HEIGHT, UI_POSITION, BUTTON_HEIGHT, BUTTON_MARGIN, x_size, y_size, cell_size, cell_width, cell_height, GRID_WIDTH, GRID_HEIGHT, PURPLE, variable
+from parameters import WHITE, BLACK, GRAY, LIGHT_GRAY, DARK_GRAY, GREEN, UI_WIDTH, WINDOW_WIDTH, WINDOW_HEIGHT, UI_HEIGHT, UI_POSITION, BUTTON_HEIGHT, BUTTON_MARGIN, x_size, y_size, cell_size, cell_width, cell_height, GRID_WIDTH, GRID_HEIGHT, PURPLE, player_taxes
 import random
 from revolts import revolt, bourgeois_revolution, secession
 
@@ -165,10 +165,10 @@ def draw_economy_overlay(screen, states):
     display_towns(screen, pygame.font.Font(None, 20), states, overlay_width, overlay_height, overlay_x, overlay_y)
 
 
-def commodities(states, territories, population_grid, terrain_grid, towns, variable):
+def commodities(states, territories, population_grid, terrain_grid, towns, player_taxes):
     if len(states) > 0:
         for state in states:
-            state = get_taxes(state, variable)
+            state = get_taxes(state, player_taxes)
             populations = state["population_counts"]
             commodities = state["commodities"]
             noble_growth = state["noble_growth"]
@@ -451,11 +451,15 @@ def check_towns(towns, states, territories):
 
 
 
-def get_taxes(state, variable):
+def get_taxes(state, player_taxes):
     if state["player"] == 'Yes':
         taxes = list(state["taxes"])  # Convert taxes tuple to a list
-        income_tax = variable / 1000
+        grain_rent = player_taxes["grain rent"] / 1000
+        land_rent = player_taxes["land rent"] / 1000
+        poll_tax = player_taxes["poll tax"] / 1000
+        corvee = player_taxes["tolls"] / 1000
+
         for n in range(len(taxes)):
-            taxes[n] = income_tax
+            taxes[n] = grain_rent
         state["taxes"] = taxes  # Assign the modified taxes list back to the state dictionary
     return state

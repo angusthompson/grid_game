@@ -44,8 +44,14 @@ GRAY = (200, 200, 200)
 LIGHT_GRAY = (220, 220, 220)
 DARK_GRAY = (150, 150, 150)
 
-slider_position = 0
-variable = 0
+slider_position = (0,0.1,0.1,0.1,0.1,0,0,0)
+player_taxes = {"tributes": 0.1, "grain rent": 0.1, "land rent": 0.1, "poll tax": 0.1, "tolls": 0.1}
+player_expenses = {"military stockpiles": 0.1, "grain dole": 0.1, "subsidies": 0.1, "religious donations": 0.1, "tolls": 0.1}
+player_government = {"HOS selection": 'None', "HOS powerbase": 'None', "HOS powers": 'None', "CG selection": 'None', "CG powerbase": 'None', "LG selection": 'None', "LG powerbase": 'None', "Taxation": 'None', "Military spending": 'None', "Generalship": 'None', "Infrastructure": 'None', "Subsidies": 'None', "State Monopolies": 'None', "Conscription": 'None', "Tolls": 'None', "Tariffs": 'None', "Tribute": 'None'}
+political_rights = {"Taxation": 0, "Military recruitment": 0, "Control of commerce": 0, "Infrastructure": 0, "Subsidies": 0, "State monopolies": 0, "Military spending": 0, "Generalship": 0, "Tariffs": 0, "Tribute": 0}
+tick_box_checked = {"Taxation": '0', "Military recruitment": '0', "Control of commerce": '0', "Infrastructure": '0', "Subsidies": '0', "Military spending": '0', "State Monopolies": '0', "Generalship": '0', "Tariffs": '0', "Tribute": '0'}
+selection = ['None', 'None', 'None']
+powerbase = ['None', 'None', 'None']
 
 # Define constants
 # GRID_SIZE = 60
@@ -58,3 +64,5 @@ BUTTON_TEXT_HOVER_COLOR = (255, 255, 255)
 # Assuming these constants are defined in your code
 PURPLE = (128, 0, 128)
 TILE_SIZE = 12  # Adjust this value as per your tile size, make sure to also adjust in 'ui' module.
+
+display_gov_dropdowns = [0, 0, 0, 0, 0, 0, 0, 0]

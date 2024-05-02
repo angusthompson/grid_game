@@ -4,14 +4,14 @@ import sys
 import numpy as np
 import random
 import time
-from ui import draw_button, is_hover, display_population_info, counters
+from ui import draw_button, is_hover, display_population_info, counters, player_classes_overlay, player_diplomacy_overlay, player_government_overlay
 from population_simulation import generate_population_grid, initial_population_caps, update_population_caps, simulate_population_growth, generate_road_grid
 from terrain_generation import generate_terrain_grid
 from graphics import draw_terrain, determine_terrain_color, draw_terrain_and_population, draw_road_overlay, draw_tribe_location, borders, draw_towns_overlay, draw_beach_lines, player_decisions_overlay
 from primitive_movement import move_population_up, move_population_down, move_population_left, move_population_right, find_starting_location, convert_to_farmers
 from controls import move_down, move_left, move_right, move_up, advance, convert_to_farmers_button, claim_state_button
 from economy import borders, draw_territory_borders, count_population_by_state, draw_economy_overlay
-from parameters import cell_height, cell_size, cell_width, x_size, y_size, WHITE, BLACK, GRAY, LIGHT_GRAY, DARK_GRAY, GREEN, UI_WIDTH, WINDOW_WIDTH, WINDOW_HEIGHT, UI_HEIGHT, UI_POSITION, BUTTON_HEIGHT, BUTTON_WIDTH, BUTTON_MARGIN, GRID_WIDTH, GRID_HEIGHT, variable,  slider_position
+from parameters import cell_height, cell_size, cell_width, x_size, y_size, WHITE, BLACK, GRAY, LIGHT_GRAY, DARK_GRAY, GREEN, UI_WIDTH, WINDOW_WIDTH, WINDOW_HEIGHT, UI_HEIGHT, UI_POSITION, BUTTON_HEIGHT, BUTTON_WIDTH, BUTTON_MARGIN, GRID_WIDTH, GRID_HEIGHT, player_taxes,  slider_position, player_government
 
 # Initialize Pygame
 pygame.init()
@@ -30,7 +30,10 @@ border_overlay_visible = False
 names_overlay_visible = False
 economy_overlay_visible = False
 towns_overlay_visible = False
-player_options_visible = False
+player_government_visible = False
+player_policies_visible = False
+player_classes_visible = False
+player_diplomacy_visible = False
 
 # Main game loop
 def main():
@@ -53,16 +56,28 @@ def main():
     turn_counter = 0
     stage = 0
     commodities = 0
-    variable = 0
-    slider_position = 0
+    player_taxes = {"tributes": 0.1, "grain rent": 0.1, "land rent": 0.1, "poll tax": 0.1, "tolls": 0.1}
+    slider_position = (0,0.1,0.1,0.1,0.1,0,0,0)
+    player_government = {"HOS selection": 'None', "HOS powerbase": 'None', "HOS powers": 'None', "CG selection": 'None', "CG powerbase": 'None', "LG selection": 'None', "LG powerbase": 'None',}
+    political_rights = {"Taxation": 0, "Military recruitment": 0, "Control of commerce": 0, "Infrastructure": 0, "Subsidies": 0, "State Monopolies": 0, "Conscription": 0, "Tolls": 0, "Tariffs": 0, "Tribute": 0}
 
     initial_population_caps_grid = initial_population_caps(terrain_grid)
     global border_overlay_visible
     global names_overlay_visible
     global economy_overlay_visible
     global towns_overlay_visible
-    global player_options_visible
+    global player_government_visible
+    global player_policies_visible
+    global player_classes_visible
+    global player_diplomacy_visible
 
+    # tick_box_checked = False
+    # tick_box_checked = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+    tick_box_checked = {"Taxation": '0', "Military recruitment": '0', "Control of commerce": '0', "Infrastructure": '0', "Subsidies": '0', "Military spending": '0', "State Monopolies": '0', "Generalship": '0', "Tariffs": '0', "Tribute": '0'}
+    selection = ['None', 'None', 'None']
+    powerbase = ['None', 'None', 'None']
+    display_gov_dropdowns = [0, 0, 0, 0, 0, 0, 0, 0]
+                             
     # Calculate cell sizes based on the dimensions of the window and terrain grid
     cell_width = (WINDOW_WIDTH - UI_WIDTH) // x_size
     cell_height = WINDOW_HEIGHT // y_size
@@ -71,7 +86,7 @@ def main():
     GRID_WIDTH = cell_width*x_size
     GRID_HEIGHT = cell_height*y_size
 
-    button_labels = ['^', 'v', '<-', '->','S','C','-','-','Borders','Names','Economies','Towns','Policies','-','-','-']
+    button_labels = ['^', 'v', '<-', '->','S','C','-','-','Borders','Names','Economies','Towns','Government','Policies','Classes','Diplomacy']
 
     current_tribe_location = (0, 0)
     current_tribe_location = find_starting_location(population_grid)
@@ -110,6 +125,9 @@ def main():
         button_12_rect = pygame.Rect(UI_POSITION[0] + 10 + (BUTTON_HEIGHT + BUTTON_MARGIN), UI_POSITION[1] + 10 + (BUTTON_HEIGHT + BUTTON_MARGIN) * 2, BUTTON_WIDTH*2, BUTTON_HEIGHT)
         button_13_rect = pygame.Rect(UI_POSITION[0] + 10 + (BUTTON_HEIGHT + BUTTON_MARGIN), UI_POSITION[1] + 10 + (BUTTON_HEIGHT + BUTTON_MARGIN) * 3, BUTTON_WIDTH*2, BUTTON_HEIGHT)
         button_14_rect = pygame.Rect(UI_POSITION[0] + 10 + (BUTTON_HEIGHT + BUTTON_MARGIN), UI_POSITION[1] + 10 + (BUTTON_HEIGHT + BUTTON_MARGIN) * 4, BUTTON_WIDTH*2, BUTTON_HEIGHT)
+        button_15_rect = pygame.Rect(UI_POSITION[0] + 10 + (BUTTON_HEIGHT + BUTTON_MARGIN), UI_POSITION[1] + 10 + (BUTTON_HEIGHT + BUTTON_MARGIN) * 5, BUTTON_WIDTH*2, BUTTON_HEIGHT)
+        button_16_rect = pygame.Rect(UI_POSITION[0] + 10 + (BUTTON_HEIGHT + BUTTON_MARGIN), UI_POSITION[1] + 10 + (BUTTON_HEIGHT + BUTTON_MARGIN) * 6, BUTTON_WIDTH*2, BUTTON_HEIGHT)
+        button_17_rect = pygame.Rect(UI_POSITION[0] + 10 + (BUTTON_HEIGHT + BUTTON_MARGIN), UI_POSITION[1] + 10 + (BUTTON_HEIGHT + BUTTON_MARGIN) * 7, BUTTON_WIDTH*2, BUTTON_HEIGHT)
 
         mouse_x, mouse_y = pygame.mouse.get_pos()
 
@@ -127,17 +145,17 @@ def main():
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 # Check for button clicks
                 if is_hover(pygame.mouse.get_pos(), advance_button_rect):
-                    population_grid, terrain_grid, current_tribe_location, population_caps_grid, road_grid, turn_counter, towns, states, territories, variable = advance(population_grid, terrain_grid, current_tribe_location, population_caps_grid, initial_population_caps_grid, turn_counter, towns, states, territories, variable)
+                    population_grid, terrain_grid, current_tribe_location, population_caps_grid, road_grid, turn_counter, towns, states, territories, player_taxes = advance(population_grid, terrain_grid, current_tribe_location, population_caps_grid, initial_population_caps_grid, turn_counter, towns, states, territories, player_taxes)
                 elif is_hover(pygame.mouse.get_pos(), button_1_rect):
-                    population_grid, terrain_grid, current_tribe_location, population_caps_grid, road_grid, turn_counter, towns, states, territories, variable = move_up(population_grid, terrain_grid, current_tribe_location, population_caps_grid, initial_population_caps_grid, turn_counter, towns, states, territories, variable)
+                    population_grid, terrain_grid, current_tribe_location, population_caps_grid, road_grid, turn_counter, towns, states, territories, player_taxes = move_up(population_grid, terrain_grid, current_tribe_location, population_caps_grid, initial_population_caps_grid, turn_counter, towns, states, territories, player_taxes)
                 elif is_hover(pygame.mouse.get_pos(), button_2_rect):
-                    population_grid, terrain_grid, current_tribe_location, population_caps_grid, road_grid, turn_counter, towns, states, territories, variable = move_down(population_grid, terrain_grid, current_tribe_location, population_caps_grid, initial_population_caps_grid, turn_counter, towns, states, territories, variable)
+                    population_grid, terrain_grid, current_tribe_location, population_caps_grid, road_grid, turn_counter, towns, states, territories, player_taxes = move_down(population_grid, terrain_grid, current_tribe_location, population_caps_grid, initial_population_caps_grid, turn_counter, towns, states, territories, player_taxes)
                 elif is_hover(pygame.mouse.get_pos(), button_3_rect):
-                    population_grid, terrain_grid, current_tribe_location, population_caps_grid, road_grid, turn_counter, towns, states, territories, variable = move_left(population_grid, terrain_grid, current_tribe_location, population_caps_grid, initial_population_caps_grid, turn_counter, towns, states, territories, variable)
+                    population_grid, terrain_grid, current_tribe_location, population_caps_grid, road_grid, turn_counter, towns, states, territories, player_taxes = move_left(population_grid, terrain_grid, current_tribe_location, population_caps_grid, initial_population_caps_grid, turn_counter, towns, states, territories, player_taxes)
                 elif is_hover(pygame.mouse.get_pos(), button_4_rect):
-                    population_grid, terrain_grid, current_tribe_location, population_caps_grid, road_grid, turn_counter, towns, states, territories, variable = move_right(population_grid, terrain_grid, current_tribe_location, population_caps_grid, initial_population_caps_grid, turn_counter, towns, states, territories, variable)
+                    population_grid, terrain_grid, current_tribe_location, population_caps_grid, road_grid, turn_counter, towns, states, territories, player_taxes = move_right(population_grid, terrain_grid, current_tribe_location, population_caps_grid, initial_population_caps_grid, turn_counter, towns, states, territories, player_taxes)
                 elif is_hover(pygame.mouse.get_pos(), button_5_rect):
-                    population_grid, terrain_grid, population_caps_grid, road_grid, turn_counter, stage, towns, states, territories, variable = convert_to_farmers_button(population_grid, terrain_grid, current_tribe_location, population_caps_grid, initial_population_caps_grid, turn_counter, stage, towns, states, territories, variable)
+                    population_grid, terrain_grid, population_caps_grid, road_grid, turn_counter, stage, towns, states, territories, player_taxes = convert_to_farmers_button(population_grid, terrain_grid, current_tribe_location, population_caps_grid, initial_population_caps_grid, turn_counter, stage, towns, states, territories, player_taxes)
                 elif is_hover(pygame.mouse.get_pos(), button_6_rect):
                     claim_state_button(territories, states, current_tribe_location)
 
@@ -150,28 +168,37 @@ def main():
                 elif is_hover(pygame.mouse.get_pos(), button_13_rect):
                     towns_overlay_visible = not towns_overlay_visible
                 elif is_hover(pygame.mouse.get_pos(), button_14_rect):
-                    player_options_visible = not player_options_visible
+                    player_government_visible = not player_government_visible
+                elif is_hover(pygame.mouse.get_pos(), button_15_rect):
+                    player_policies_visible = not player_policies_visible
+                elif is_hover(pygame.mouse.get_pos(), button_16_rect):
+                    player_classes_visible = not player_classes_visible
+                elif is_hover(pygame.mouse.get_pos(), button_17_rect):
+                    player_diplomacy_visible = not player_diplomacy_visible
 
             elif event.type == pygame.KEYDOWN:
                 # Check for keyboard input
                 if event.key == pygame.K_UP:
-                    population_grid, terrain_grid, current_tribe_location, population_caps_grid, road_grid, turn_counter, towns, states, territories, variable = move_up(population_grid, terrain_grid, current_tribe_location, population_caps_grid, initial_population_caps_grid, turn_counter, towns, states, territories, variable)
+                    population_grid, terrain_grid, current_tribe_location, population_caps_grid, road_grid, turn_counter, towns, states, territories, player_taxes = move_up(population_grid, terrain_grid, current_tribe_location, population_caps_grid, initial_population_caps_grid, turn_counter, towns, states, territories, player_taxes)
                 elif event.key == pygame.K_DOWN:
-                    population_grid, terrain_grid, current_tribe_location, population_caps_grid, road_grid, turn_counter, towns, states, territories, variable = move_down(population_grid, terrain_grid, current_tribe_location, population_caps_grid, initial_population_caps_grid, turn_counter, towns, states, territories, variable)
+                    population_grid, terrain_grid, current_tribe_location, population_caps_grid, road_grid, turn_counter, towns, states, territories, player_taxes = move_down(population_grid, terrain_grid, current_tribe_location, population_caps_grid, initial_population_caps_grid, turn_counter, towns, states, territories, player_taxes)
                 elif event.key == pygame.K_LEFT:
-                    population_grid, terrain_grid, current_tribe_location, population_caps_grid, road_grid, turn_counter, towns, states, territories, variable = move_left(population_grid, terrain_grid, current_tribe_location, population_caps_grid, initial_population_caps_grid, turn_counter, towns, states, territories, variable)
+                    population_grid, terrain_grid, current_tribe_location, population_caps_grid, road_grid, turn_counter, towns, states, territories, player_taxes = move_left(population_grid, terrain_grid, current_tribe_location, population_caps_grid, initial_population_caps_grid, turn_counter, towns, states, territories, player_taxes)
                 elif event.key == pygame.K_RIGHT:
-                    population_grid, terrain_grid, current_tribe_location, population_caps_grid, road_grid, turn_counter, towns, states, territories, variable = move_right(population_grid, terrain_grid, current_tribe_location, population_caps_grid, initial_population_caps_grid, turn_counter, towns, states, territories, variable)
+                    population_grid, terrain_grid, current_tribe_location, population_caps_grid, road_grid, turn_counter, towns, states, territories, player_taxes = move_right(population_grid, terrain_grid, current_tribe_location, population_caps_grid, initial_population_caps_grid, turn_counter, towns, states, territories, player_taxes)
                 elif event.key == pygame.K_RETURN:
-                    population_grid, terrain_grid, current_tribe_location, population_caps_grid, road_grid, turn_counter, towns, states, territories, variable = advance(population_grid, terrain_grid, current_tribe_location, population_caps_grid, initial_population_caps_grid, turn_counter, towns, states, territories, variable)
+                    population_grid, terrain_grid, current_tribe_location, population_caps_grid, road_grid, turn_counter, towns, states, territories, player_taxes = advance(population_grid, terrain_grid, current_tribe_location, population_caps_grid, initial_population_caps_grid, turn_counter, towns, states, territories, player_taxes)
                 elif event.key == pygame.K_SPACE:
-                    population_grid, terrain_grid, current_tribe_location, population_caps_grid, road_grid, turn_counter, towns, states, territories, variable = advance(population_grid, terrain_grid, current_tribe_location, population_caps_grid, initial_population_caps_grid, turn_counter, towns, states, territories, variable)
+                    population_grid, terrain_grid, current_tribe_location, population_caps_grid, road_grid, turn_counter, towns, states, territories, player_taxes = advance(population_grid, terrain_grid, current_tribe_location, population_caps_grid, initial_population_caps_grid, turn_counter, towns, states, territories, player_taxes)
                 elif event.key == pygame.K_ESCAPE:
                     economy_overlay_visible = False
                     towns_overlay_visible = False
-                    player_options_visible = False
+                    player_government_visible = False
+                    player_policies_visible = False
+                    player_classes_visible = False
+                    player_diplomacy_visible = False
                 elif event.key == pygame.K_s:
-                    population_grid, terrain_grid, population_caps_grid, road_grid, turn_counter, stage, towns, states, territories, variable = convert_to_farmers_button(population_grid, terrain_grid, current_tribe_location, population_caps_grid, initial_population_caps_grid, turn_counter, stage, towns, states, territories, variable)
+                    population_grid, terrain_grid, population_caps_grid, road_grid, turn_counter, stage, towns, states, territories, player_taxes = convert_to_farmers_button(population_grid, terrain_grid, current_tribe_location, population_caps_grid, initial_population_caps_grid, turn_counter, stage, towns, states, territories, player_taxes)
                 elif event.key == pygame.K_c:
                     claim_state_button(territories, states, current_tribe_location)
     
@@ -222,7 +249,7 @@ def main():
                 name = town_info["name"]
                 x = town_info["position_x"]
                 y = town_info["position_y"]
-                font = pygame.font.Font(None, 20)
+                font = pygame.font.Font(None, 16)
                 # Render merchant text
                 text = name
                 surface = font.render(text, True, (255, 255, 255))
@@ -255,8 +282,17 @@ def main():
         if towns_overlay_visible:
             draw_towns_overlay(game_display, towns)
 
-        if player_options_visible:
-            slider_position, variable = player_decisions_overlay(game_display, towns, slider_position, variable)
+        if player_policies_visible:
+            slider_position, player_taxes = player_decisions_overlay(game_display, towns, slider_position, player_taxes)
+
+        if player_government_visible:
+            display_gov_dropdowns, player_government, tick_box_checked, political_rights, selection, powerbase = player_government_overlay(game_display, display_gov_dropdowns, player_government, tick_box_checked, political_rights, selection, powerbase)
+
+        if player_classes_visible:
+            player_classes_overlay(game_display)
+
+        if player_diplomacy_visible:
+            player_diplomacy_overlay(game_display)
 
         # Update the display
         pygame.display.flip()

@@ -4,7 +4,7 @@ import math
 import noise
 import numpy as np
 import pygame_widgets
-from parameters import cell_height, cell_size, cell_width, x_size, y_size, WHITE, BLACK, GRAY, LIGHT_GRAY, DARK_GRAY, GREEN, UI_WIDTH, WINDOW_WIDTH, WINDOW_HEIGHT, UI_HEIGHT, UI_POSITION, BUTTON_HEIGHT, BUTTON_MARGIN, GRID_WIDTH, GRID_HEIGHT, variable
+from parameters import cell_height, cell_size, cell_width, x_size, y_size, WHITE, BLACK, GRAY, LIGHT_GRAY, DARK_GRAY, GREEN, UI_WIDTH, WINDOW_WIDTH, WINDOW_HEIGHT, UI_HEIGHT, UI_POSITION, BUTTON_HEIGHT, BUTTON_MARGIN, GRID_WIDTH, GRID_HEIGHT, player_taxes
 WINDOW_SIZE = (WINDOW_WIDTH, WINDOW_HEIGHT)
 game_display = pygame.display.set_mode(WINDOW_SIZE)
 
@@ -264,9 +264,21 @@ def display_towns_only(screen, font, towns, overlay_width, overlay_height, overl
     else:
         pass
 
+def player_decisions_overlay(screen, towns, slider_position, player_taxes):
+    # player_taxes = list(player_taxes)
+    player_taxes_1 = player_taxes["grain rent"]
+    player_taxes_2 = player_taxes["land rent"]
+    player_taxes_3 = player_taxes["poll tax"]
+    player_taxes_4 = player_taxes["tolls"]
+    slider_position = list(slider_position)
+    slider_position_1 = int(slider_position[1])
+    slider_position_2 = int(slider_position[2])
+    slider_position_3 = int(slider_position[3])
+    slider_position_4 = int(slider_position[4])
 
+    x_parameter = 0
+    y_parameter = 100
 
-def player_decisions_overlay(screen, towns, slider_position, variable):
     # Get the dimensions of the game display
     display_width, display_height = screen.get_size()
 
@@ -288,38 +300,121 @@ def player_decisions_overlay(screen, towns, slider_position, variable):
     # Draw the black border
     pygame.draw.rect(screen, black, (overlay_x, overlay_y, overlay_width, overlay_height), 3)
 
+    # Draw the title "Taxes"
+    font = pygame.font.Font(None, 40)
+    title_label = font.render("Taxes", True, (0, 0, 0))
+    title_x = overlay_x + (overlay_width - title_label.get_width()) // 2
+    screen.blit(title_label, (title_x, overlay_y + 35))
+
+
+
     # Draw the slider background
-    slider_rect = pygame.Rect(overlay_x + 20, overlay_y + 20, overlay_width - 40, 20)
-    pygame.draw.rect(screen, GREY, slider_rect)
+    slider_rect_1 = pygame.Rect(overlay_x + 110, overlay_y + y_parameter, overlay_width - 200, 20)
+    slider_rect_2 = pygame.Rect(overlay_x + 110, overlay_y + y_parameter + 40, overlay_width - 200, 20)
+    slider_rect_3 = pygame.Rect(overlay_x + 110, overlay_y + y_parameter + 80, overlay_width - 200, 20)
+    slider_rect_4 = pygame.Rect(overlay_x + 110, overlay_y + y_parameter + 120, overlay_width - 200, 20)
+
+    pygame.draw.rect(screen, GREY, slider_rect_1)
+    pygame.draw.rect(screen, GREY, slider_rect_2)
+    pygame.draw.rect(screen, GREY, slider_rect_3)
+    pygame.draw.rect(screen, GREY, slider_rect_4)
 
     # Draw the slider bar
-    slider_bar_width = overlay_width - 60
+    slider_bar_width = overlay_width - 220
     slider_bar_height = 10
-    slider_bar_rect = pygame.Rect(overlay_x + 30, overlay_y + 25, slider_bar_width, slider_bar_height)
-    pygame.draw.rect(screen, (0, 0, 0), slider_bar_rect)
+    slider_bar_rect_1 = pygame.Rect(overlay_x + 120, overlay_y + y_parameter + 5, slider_bar_width, slider_bar_height)
+    slider_bar_rect_2 = pygame.Rect(overlay_x + 120, overlay_y + y_parameter + 45, slider_bar_width, slider_bar_height)
+    slider_bar_rect_3 = pygame.Rect(overlay_x + 120, overlay_y + y_parameter + 85, slider_bar_width, slider_bar_height)
+    slider_bar_rect_4 = pygame.Rect(overlay_x + 120, overlay_y + y_parameter + 125, slider_bar_width, slider_bar_height)
+
+    pygame.draw.rect(screen, (0, 0, 0), slider_bar_rect_1)
+    pygame.draw.rect(screen, (0, 0, 0), slider_bar_rect_2)
+    pygame.draw.rect(screen, (0, 0, 0), slider_bar_rect_3)
+    pygame.draw.rect(screen, (0, 0, 0), slider_bar_rect_4)
 
     # Calculate slider position based on some parameter
-    parameter_value = slider_position / slider_bar_width if slider_position <= slider_bar_width else 1.0
-    slider_pos = overlay_x + 30 + parameter_value * slider_bar_width
+    parameter_value_1 = slider_position_1 / slider_bar_width if slider_position_1 <= slider_bar_width else 1.0
+    parameter_value_2 = slider_position_2 / slider_bar_width if slider_position_2 <= slider_bar_width else 1.0
+    parameter_value_3 = slider_position_3 / slider_bar_width if slider_position_3 <= slider_bar_width else 1.0
+    parameter_value_4 = slider_position_4 / slider_bar_width if slider_position_4 <= slider_bar_width else 1.0
 
-    # Draw the slider knob
+    slider_pos_1 = overlay_x + 30 + parameter_value_1 * slider_bar_width
+    slider_pos_2 = overlay_x + 30 + parameter_value_2 * slider_bar_width
+    slider_pos_3 = overlay_x + 30 + parameter_value_3 * slider_bar_width
+    slider_pos_4 = overlay_x + 30 + parameter_value_4 * slider_bar_width
+
+    # Draw the slider knobs
     slider_knob_radius = 10
-    pygame.draw.circle(screen, (0, 0, 255), (int(slider_pos), overlay_y + 30), slider_knob_radius)
+    pygame.draw.circle(screen, (0, 0, 255), (int(slider_pos_1) + 100, overlay_y + y_parameter + 10), slider_knob_radius)
+    pygame.draw.circle(screen, (0, 0, 255), (int(slider_pos_2) + 100, overlay_y + y_parameter + 50), slider_knob_radius)
+    pygame.draw.circle(screen, (0, 0, 255), (int(slider_pos_3) + 100, overlay_y + y_parameter + 90), slider_knob_radius)
+    pygame.draw.circle(screen, (0, 0, 255), (int(slider_pos_4) + 100, overlay_y + y_parameter + 130), slider_knob_radius)
+
+    # Draw text labels for slider names
+    font = pygame.font.Font(None, 20)
+    name_label_1 = font.render("Grain Rent", True, (0, 0, 0))
+    name_label_2 = font.render("Land Rent", True, (0, 0, 0))
+    name_label_3 = font.render("Poll Tax", True, (0, 0, 0))
+    name_label_4 = font.render("Tolls", True, (0, 0, 0))
+    screen.blit(name_label_1, (overlay_x + 25, overlay_y + y_parameter + 5))
+    screen.blit(name_label_2, (overlay_x + 25, overlay_y + y_parameter + 45))
+    screen.blit(name_label_3, (overlay_x + 25, overlay_y + y_parameter + 85))
+    screen.blit(name_label_4, (overlay_x + 25, overlay_y + y_parameter + 125))
+
+    # Draw text labels for slider values
+    value_label_1 = font.render(str(slider_position_1), True, (0, 0, 0))
+    value_label_2 = font.render(str(slider_position_2), True, (0, 0, 0))
+    value_label_3 = font.render(str(slider_position_3), True, (0, 0, 0))
+    value_label_4 = font.render(str(slider_position_4), True, (0, 0, 0))
+
+    screen.blit(value_label_1, (overlay_x + overlay_width - 60, overlay_y + y_parameter - 5))
+    screen.blit(value_label_2, (overlay_x + overlay_width - 60, overlay_y + y_parameter + 35))
+    screen.blit(value_label_3, (overlay_x + overlay_width - 60, overlay_y + y_parameter + 75))
+    screen.blit(value_label_4, (overlay_x + overlay_width - 60, overlay_y + y_parameter + 115))
+
+    # Calculate and draw the sum of slider values
+    total_value = slider_position_1 + slider_position_2 + slider_position_3 + slider_position_4
+    total_label = font.render("Total: " + str(total_value), True, (0, 0, 0))
+    screen.blit(total_label, (overlay_x + (overlay_width - total_label.get_width()) // 2, overlay_y + overlay_height - 25))
 
     # Handle slider movement
     mouse_x, mouse_y = pygame.mouse.get_pos()
     mouse_clicked = pygame.mouse.get_pressed()[0]
 
-    if slider_rect.collidepoint(mouse_x, mouse_y) and mouse_clicked:
+    if slider_rect_1.collidepoint(mouse_x, mouse_y) and mouse_clicked:
         # Calculate new slider position based on mouse x coordinate
-        new_slider_pos = mouse_x - overlay_x - 30
-        slider_position = max(0, min(new_slider_pos, slider_bar_width))  # Clamp within slider bounds
-
-        # Update slider position based on parameter value
-        # slider_position = int(new_slider_pos / slider_bar_width * 100)  # Assuming slider_position ranges from 0 to 100
+        new_slider_pos_1 = mouse_x - overlay_x - 130
+        slider_position_1 = max(0, min(new_slider_pos_1, slider_bar_width-30))  # Clamp within slider bounds
     
-    variable = slider_position
-    return slider_position, variable
+    if slider_rect_2.collidepoint(mouse_x, mouse_y) and mouse_clicked:
+        # Calculate new slider position based on mouse x coordinate
+        new_slider_pos_2 = mouse_x - overlay_x - 130
+        slider_position_2 = max(0, min(new_slider_pos_2, slider_bar_width-30))  # Clamp within slider bounds
+
+    if slider_rect_3.collidepoint(mouse_x, mouse_y) and mouse_clicked:
+        # Calculate new slider position based on mouse x coordinate
+        new_slider_pos_3 = mouse_x - overlay_x - 130
+        slider_position_3 = max(0, min(new_slider_pos_3, slider_bar_width-30))  # Clamp within slider bounds
+        
+    if slider_rect_4.collidepoint(mouse_x, mouse_y) and mouse_clicked:
+        # Calculate new slider position based on mouse x coordinate
+        new_slider_pos_4 = mouse_x - overlay_x - 130
+        slider_position_4 = max(0, min(new_slider_pos_4, slider_bar_width-30))  # Clamp within slider bounds
+
+    # Update player_taxes values and slider positions in their respective lists
+
+    player_taxes["grain rent"] = slider_position_1
+    player_taxes["land rent"] = slider_position_2
+    player_taxes["poll tax"] = slider_position_3
+    player_taxes["tolls"] = slider_position_4
+
+    slider_position[1] = slider_position_1
+    slider_position[2] = slider_position_2
+    slider_position[3] = slider_position_3
+    slider_position[4] = slider_position_4
+
+    return slider_position, player_taxes
+
 
 
 # Function to detect sea borders
